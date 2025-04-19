@@ -3,6 +3,9 @@ import axios from 'axios';
 import { format, startOfToday, parseISO } from 'date-fns';
 import LoadingSpinner from '../LoadingSpinner';
 
+// Use environment variable or fallback to localhost:5001
+const API_BASE_URL = process.env.REACT_APP_API_URL || 'http://localhost:5001';
+
 const ContentPlanning = () => {
   const [contentIdeas, setContentIdeas] = useState([]);
   const [products, setProducts] = useState([]);
@@ -39,7 +42,7 @@ const ContentPlanning = () => {
   useEffect(() => {
     const fetchProducts = async () => {
       try {
-        const res = await axios.get('/api/products');
+        const res = await axios.get(`${API_BASE_URL}/api/products`);
         setProducts(res.data);
         if (res.data.length > 0) {
           setSelectedProduct(res.data[0]._id);
@@ -60,7 +63,7 @@ const ContentPlanning = () => {
       
       setLoading(true);
       try {
-        const res = await axios.get(`/api/content-ideas/product/${selectedProduct}`);
+        const res = await axios.get(`${API_BASE_URL}/api/content-ideas/product/${selectedProduct}`);
         setContentIdeas(res.data);
         setLoading(false);
       } catch (err) {
@@ -88,14 +91,14 @@ const ContentPlanning = () => {
     try {
       if (editingIdea) {
         // Update existing idea
-        const res = await axios.put(`/api/content-ideas/${editingIdea._id}`, formData);
+        const res = await axios.put(`${API_BASE_URL}/api/content-ideas/${editingIdea._id}`, formData);
         setContentIdeas(prev => 
           prev.map(idea => idea._id === editingIdea._id ? res.data : idea)
         );
         setEditingIdea(null);
       } else {
         // Create new idea
-        const res = await axios.post('/api/content-ideas', formData);
+        const res = await axios.post(`${API_BASE_URL}/api/content-ideas`, formData);
         setContentIdeas(prev => [...prev, res.data]);
       }
       
@@ -135,7 +138,7 @@ const ContentPlanning = () => {
   const handleDelete = async (id) => {
     if (window.confirm('Are you sure you want to delete this content idea?')) {
       try {
-        await axios.delete(`/api/content-ideas/${id}`);
+        await axios.delete(`${API_BASE_URL}/api/content-ideas/${id}`);
         setContentIdeas(prev => prev.filter(idea => idea._id !== id));
       } catch (err) {
         console.error('Failed to delete content idea', err);
