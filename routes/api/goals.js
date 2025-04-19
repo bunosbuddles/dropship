@@ -3,8 +3,8 @@ const express = require('express');
 const router = express.Router();
 const auth = require('../../middleware/auth');
 const { check, validationResult } = require('express-validator');
-const Goal = require('../../models/Goal');
-const Product = require('../../models/Product');
+const Goal = require('../../models/goal');
+const Product = require('../../models/product');
 
 // @route    GET api/goals
 // @desc     Get all goals for logged in user

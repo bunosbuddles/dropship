@@ -2,9 +2,9 @@
 const express = require('express');
 const router = express.Router();
 const auth = require('../../middleware/auth');
-const Product = require('../../models/Product');
-const CalendarEntry = require('../../models/CalendarEntry');
-const Goal = require('../../models/Goal');
+const Product = require('../../models/product');
+const CalendarEntry = require('../../models/calendarEntry');
+const Goal = require('../../models/goal');
 
 // Helper function to get date ranges
 const getDateRange = (timeframe) => {

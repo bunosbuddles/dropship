@@ -4,8 +4,8 @@ const router = express.Router();
 const auth = require('../../middleware/auth');
 const { check, validationResult } = require('express-validator');
 const mongoose = require('mongoose');
-const CalendarEntry = require('../../models/CalendarEntry');
-// const Product = require('../../models/Product');
+const CalendarEntry = require('../../models/calendarEntry');
+// const Product = require('../../models/product');
 
 // @route    GET api/calendar
 // @desc     Get all calendar entries for logged in user

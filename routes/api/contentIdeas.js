@@ -3,8 +3,8 @@ const router = express.Router();
 const auth = require('../../middleware/auth');
 const { check, validationResult } = require('express-validator');
 
-const Product = require('../../models/Product');
-const ContentIdea = require('../../models/ContentIdea');
+const Product = require('../../models/product');
+const ContentIdea = require('../../models/contentIdea');
 
 // @route    GET api/content-ideas
 // @desc     Get all content ideas for a user

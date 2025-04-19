@@ -3,7 +3,7 @@ const express = require('express');
 const router = express.Router();
 const auth = require('../../middleware/auth');
 const { check, validationResult } = require('express-validator');
-const Product = require('../../models/Product');
+const Product = require('../../models/product');
 
 // @route    GET api/products
 // @desc     Get all products for logged in user

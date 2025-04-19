@@ -9,9 +9,12 @@ const app = express();
 // Connect Database first
 connectDB();
 
-// Configure CORS
+// Configure CORS to allow both localhost and Render domains
 const corsOptions = {
-  origin: 'http://localhost:3000',
+  origin: [
+    'http://localhost:3000',
+    /\.onrender\.com$/  // Allow any Render subdomain
+  ],
   methods: ['GET', 'POST', 'PUT', 'DELETE'],
   credentials: true
 };
