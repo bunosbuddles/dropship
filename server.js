@@ -9,16 +9,25 @@ const app = express();
 // Connect Database first
 connectDB();
 
-// Configure CORS to allow both localhost and Render domains
-const corsOptions = {
-  origin: [
-    'http://localhost:3000',
-    /\.onrender\.com$/  // Allow any Render subdomain
-  ],
-  methods: ['GET', 'POST', 'PUT', 'DELETE'],
-  credentials: true
-};
-app.use(cors(corsOptions));
+// Improved CORS configuration with explicit preflight handling
+const allowedOrigins = ['http://localhost:3000', 'https://dropship-frontend.onrender.com'];
+
+app.use(cors({
+  origin: function(origin, callback) {
+    // Allow requests with no origin (like mobile apps, curl requests)
+    if (!origin) return callback(null, true);
+    
+    if (allowedOrigins.indexOf(origin) !== -1 || origin.endsWith('.onrender.com')) {
+      callback(null, true);
+    } else {
+      callback(new Error('Not allowed by CORS'));
+    }
+  },
+  methods: ['GET', 'POST', 'PUT', 'DELETE', 'OPTIONS'],
+  allowedHeaders: ['Origin', 'X-Requested-With', 'Content-Type', 'Accept', 'Authorization', 'x-auth-token'],
+  credentials: true,
+  optionsSuccessStatus: 200 // Some legacy browsers choke on 204
+}));
 
 // Init Middleware
 app.use(express.json({ extended: false }));
