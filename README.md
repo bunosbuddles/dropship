@@ -2,6 +2,9 @@
 
 A full-stack MERN (MongoDB, Express, React, Node.js) application for tracking and analyzing dropshipping business performance. Track product sales, manage suppliers, set goals, and visualize your business growth.
 
+Hosted: https://dropship-frontend.onrender.com/ 
+(may take a minute to load up since the site isn't active all the time)
+
 ## Features
 
 - **User Authentication** - Secure login and registration system
