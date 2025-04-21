@@ -75,9 +75,8 @@ This will start:
 
 ### Adding Products
 
-1. Navigate to the Products page
-2. Click "Add New Product"
-3. Fill in the product details including:
+1. Click "Add New Product"
+2. Fill in the product details including:
    - Product name
    - Base price
    - Unit cost
@@ -135,22 +134,3 @@ dropship/
 - Recharts - Data visualization
 - Axios - API communication
 
-## Troubleshooting
-
-### Port Conflicts
-If you encounter a "port already in use" error:
-
-```
-lsof -i :5001  # Find process using port 5001
-kill -9 <PID>  # Kill the process using that port
-```
-
-### Connection Issues
-If you experience MongoDB connection issues:
-1. Ensure your MongoDB connection string is correct in the `.env` file
-2. Check that your IP address is whitelisted in MongoDB Atlas (if using Atlas)
-3. Verify network connectivity
-
-## License
-
-This project is licensed under the MIT License - see the LICENSE file for details. 
