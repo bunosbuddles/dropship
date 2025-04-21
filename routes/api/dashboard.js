@@ -17,24 +17,23 @@ const getDateRange = (timeframe) => {
       startDate.setHours(0, 0, 0, 0);
       break;
     case 'week':
-      // Set to beginning of current week (Sunday)
-      startDate.setDate(now.getDate() - now.getDay());
+      // Change from beginning of week to past 7 days
+      startDate.setDate(now.getDate() - 7);
       startDate.setHours(0, 0, 0, 0);
       break;
     case 'month':
-      // Set to beginning of current month
-      startDate.setDate(1);
+      // Change from beginning of month to past 30 days
+      startDate.setDate(now.getDate() - 30);
       startDate.setHours(0, 0, 0, 0);
       break;
     case 'quarter':
-      // Set to beginning of current quarter
-      const currentQuarter = Math.floor(now.getMonth() / 3);
-      startDate.setMonth(currentQuarter * 3, 1);
+      // Change from beginning of quarter to past 90 days
+      startDate.setDate(now.getDate() - 90);
       startDate.setHours(0, 0, 0, 0);
       break;
     case 'year':
-      // Set to beginning of current year
-      startDate.setMonth(0, 1);
+      // Change from beginning of year to past 365 days
+      startDate.setDate(now.getDate() - 365);
       startDate.setHours(0, 0, 0, 0);
       break;
     default:

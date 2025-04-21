@@ -148,7 +148,7 @@ const Dashboard = () => {
             }`}
             onClick={() => setTimeRange('week')}
           >
-            This Week
+            Past 7 Days
           </button>
           <button
             type="button"
@@ -159,7 +159,7 @@ const Dashboard = () => {
             }`}
             onClick={() => setTimeRange('month')}
           >
-            This Month
+            Past 30 Days
           </button>
           <button
             type="button"
@@ -170,7 +170,7 @@ const Dashboard = () => {
             }`}
             onClick={() => setTimeRange('quarter')}
           >
-            This Quarter
+            Past Quarter
           </button>
           <button
             type="button"
@@ -181,7 +181,7 @@ const Dashboard = () => {
             }`}
             onClick={() => setTimeRange('year')}
           >
-            This Year
+            Past Year
           </button>
         </div>
       </div>
