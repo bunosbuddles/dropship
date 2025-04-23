@@ -1,6 +1,9 @@
 import React, { useState } from 'react';
 import axios from 'axios';
 
+// Get API URL from environment or use a fallback
+const API_BASE_URL = process.env.REACT_APP_API_URL || 'https://dropship-api.onrender.com';
+
 const FeedbackButton = () => {
   const [isOpen, setIsOpen] = useState(false);
   const [feedbackType, setFeedbackType] = useState('bug');
@@ -12,11 +15,17 @@ const FeedbackButton = () => {
   const handleSubmit = async (e) => {
     e.preventDefault();
     try {
-      await axios.post('/api/feedback', {
+      await axios.post(`${API_BASE_URL}/api/feedback`, {
         type: feedbackType,
         message,
         page: window.location.pathname,
         timestamp: new Date().toISOString()
+      }, {
+        withCredentials: true,
+        headers: {
+          'Content-Type': 'application/json',
+          'x-auth-token': localStorage.getItem('token')
+        }
       });
       setSubmitted(true);
       setTimeout(() => {
@@ -33,7 +42,14 @@ const FeedbackButton = () => {
     setIsTestingEmail(true);
     setTestResult(null);
     try {
-      const response = await axios.get('/api/feedback/test-email');
+      console.log('Sending test request to:', `${API_BASE_URL}/api/feedback/test-email`);
+      const response = await axios.get(`${API_BASE_URL}/api/feedback/test-email`, {
+        withCredentials: true,
+        headers: {
+          'Content-Type': 'application/json',
+          'x-auth-token': localStorage.getItem('token')
+        }
+      });
       console.log('Email test response:', response.data);
       setTestResult({
         success: true,
