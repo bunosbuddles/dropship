@@ -40,6 +40,7 @@ app.use('/api/calendar', require('./routes/api/calendar'));
 app.use('/api/goals', require('./routes/api/goals'));
 app.use('/api/dashboard', require('./routes/api/dashboard'));
 app.use('/api/content-ideas', require('./routes/api/contentIdeas'));
+app.use('/api/feedback', require('./routes/api/feedback'));
 
 // Serve static assets in production
 if (process.env.NODE_ENV === 'production') {

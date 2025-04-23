@@ -2,6 +2,7 @@ import React, { useState } from 'react';
 import { useDispatch, useSelector } from 'react-redux';
 import { Link, useLocation, useNavigate } from 'react-router-dom';
 import { logout } from '../../redux/slices/authSlice';
+import FeedbackButton from './FeedbackButton';
 
 const Layout = ({ children }) => {
   const location = useLocation();
@@ -192,6 +193,9 @@ const Layout = ({ children }) => {
           {children}
         </div>
       </div>
+      
+      {/* Feedback Button */}
+      <FeedbackButton />
     </div>
   );
 };
