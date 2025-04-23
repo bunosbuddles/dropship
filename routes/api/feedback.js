@@ -15,12 +15,17 @@ router.post(
     check('type', 'Feedback type is required').not().isEmpty()
   ],
   async (req, res) => {
+    console.log('=== FEEDBACK POST ENDPOINT CALLED ===');
+    console.log('Request body:', req.body);
+    
     const errors = validationResult(req);
     if (!errors.isEmpty()) {
+      console.log('Validation errors:', errors.array());
       return res.status(400).json({ errors: errors.array() });
     }
 
     const { type, message, page, timestamp } = req.body;
+    console.log(`Feedback received - Type: ${type}, Page: ${page}`);
 
     try {
       // OPTION 1: Save to a file (still keeping this for backup)
@@ -153,4 +158,82 @@ router.post(
   }
 );
 
-module.exports = router; 
+// @route    GET api/feedback/test-email
+// @desc     Test email configuration
+// @access   Private
+router.get('/test-email', auth, async (req, res) => {
+  console.log('=== EMAIL TEST ENDPOINT CALLED ===');
+  console.log(`Email user: ${process.env.EMAIL_USER ? '✓ configured' : '✗ missing'}`);
+  console.log(`Email password: ${process.env.EMAIL_PASS ? '✓ configured' : '✗ missing'}`);
+  
+  try {
+    // Gmail-specific setup
+    let transporter;
+    
+    if (process.env.EMAIL_USER && process.env.EMAIL_USER.includes('@gmail.com')) {
+      console.log('Setting up Gmail-specific transporter');
+      transporter = nodemailer.createTransport({
+        service: 'gmail',
+        auth: {
+          user: process.env.EMAIL_USER,
+          pass: process.env.EMAIL_PASS
+        },
+        debug: true
+      });
+    } else {
+      console.log('Using default transporter');
+      transporter = nodemailer.createTransport({
+        host: 'smtp.gmail.com',
+        port: 587,
+        secure: false,
+        auth: {
+          user: process.env.EMAIL_USER,
+          pass: process.env.EMAIL_PASS
+        },
+        debug: true
+      });
+    }
+    
+    if (!transporter) {
+      return res.status(500).json({ error: 'Email transporter could not be created' });
+    }
+    
+    const testMailOptions = {
+      from: process.env.EMAIL_USER,
+      to: process.env.EMAIL_RECIPIENT || process.env.EMAIL_USER,
+      subject: 'Dropship Feedback System - Test Email',
+      text: 'This is a test email from your Dropship Feedback System.',
+      html: '<h2>Test Email</h2><p>This is a test email from your Dropship Feedback System.</p>'
+    };
+    
+    console.log('Sending test email to:', testMailOptions.to);
+    
+    const info = await transporter.sendMail(testMailOptions);
+    console.log('Test email sent successfully:', info.response);
+    console.log('Message ID:', info.messageId);
+    
+    return res.json({ 
+      success: true, 
+      message: 'Test email sent successfully',
+      details: {
+        messageId: info.messageId,
+        response: info.response,
+        emailSentTo: testMailOptions.to
+      }
+    });
+  } catch (err) {
+    console.error('Error sending test email:', err);
+    if (err.code) console.error('Error code:', err.code);
+    if (err.command) console.error('Failed command:', err.command);
+    if (err.response) console.error('Server response:', err.response);
+    if (err.responseCode) console.error('Response code:', err.responseCode);
+    
+    return res.status(500).json({ 
+      error: 'Failed to send test email', 
+      details: err.message,
+      code: err.code || 'unknown'
+    });
+  }
+});
+
+module.exports = router;
