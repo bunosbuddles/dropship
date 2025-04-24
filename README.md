@@ -23,58 +23,7 @@ Before you begin, ensure you have the following installed:
 
 ## Getting Started
 
-### 1. Clone the Repository
-
-```bash
-git clone https://github.com/yourusername/dropship.git
-cd dropship
-```
-
-### 2. Environment Setup
-
-Create a `.env` file in the root directory with the following variables:
-
-```
-NODE_ENV=development
-PORT=5001
-MONGODB_URI=your_mongodb_connection_string
-JWT_SECRET=your_secret_key
-```
-
-> **Note:** Replace `your_mongodb_connection_string` with your actual MongoDB connection string and set a secure `JWT_SECRET` value.
-
-### 3. Install Dependencies
-
-Install server dependencies:
-```bash
-npm install
-```
-
-Install client dependencies:
-```bash
-cd client
-npm install
-cd ..
-```
-
-### 4. Start the Development Server
-
-Run both the backend and frontend concurrently:
-```bash
-npm run dev
-```
-
-This will start:
-- Backend server on http://localhost:5001
-- Frontend development server on http://localhost:3000
-
 ## Usage Guide
-
-### User Registration and Login
-
-1. Navigate to http://localhost:3000
-2. Create a new account using the registration page
-3. Log in with your credentials
 
 ### Adding Products
 
@@ -136,4 +85,10 @@ dropship/
 - Tailwind CSS - Styling
 - Recharts - Data visualization
 - Axios - API communication
+
+
+### Please provide feedback
+
+<img width="1512" alt="image" src="https://github.com/user-attachments/assets/343c5cfb-79b7-4cee-a869-0bc2c144a170" />
+
 
