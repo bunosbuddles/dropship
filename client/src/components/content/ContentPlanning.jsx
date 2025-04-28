@@ -34,8 +34,9 @@ const ContentPlanning = () => {
       return format(startOfToday(), 'yyyy-MM-dd');
     }
     
-    // Format existing date
-    return format(parseISO(dateString), 'yyyy-MM-dd');
+    // Parse date and ensure it's treated as UTC to avoid timezone shifts
+    const date = parseISO(dateString);
+    return format(date, 'yyyy-MM-dd');
   };
 
   // Fetch products on component mount
@@ -89,16 +90,25 @@ const ContentPlanning = () => {
     e.preventDefault();
     
     try {
+      // Create a copy of the form data
+      const formDataToSubmit = { ...formData };
+      
+      // Ensure the date is set to noon UTC to avoid timezone issues
+      if (formDataToSubmit.postDateNeeded) {
+        const dateObj = new Date(formDataToSubmit.postDateNeeded + 'T12:00:00Z');
+        formDataToSubmit.postDateNeeded = dateObj.toISOString();
+      }
+      
       if (editingIdea) {
         // Update existing idea
-        const res = await axios.put(`${API_BASE_URL}/api/content-ideas/${editingIdea._id}`, formData);
+        const res = await axios.put(`${API_BASE_URL}/api/content-ideas/${editingIdea._id}`, formDataToSubmit);
         setContentIdeas(prev => 
           prev.map(idea => idea._id === editingIdea._id ? res.data : idea)
         );
         setEditingIdea(null);
       } else {
         // Create new idea
-        const res = await axios.post(`${API_BASE_URL}/api/content-ideas`, formData);
+        const res = await axios.post(`${API_BASE_URL}/api/content-ideas`, formDataToSubmit);
         setContentIdeas(prev => [...prev, res.data]);
       }
       
@@ -199,8 +209,14 @@ const ContentPlanning = () => {
   });
 
   const formatDate = (dateString) => {
+    // Parse the date and ensure it's treated as UTC
     const date = new Date(dateString);
-    return date.toLocaleDateString('en-US', { year: 'numeric', month: 'short', day: 'numeric' });
+    return date.toLocaleDateString('en-US', { 
+      year: 'numeric', 
+      month: 'short', 
+      day: 'numeric',
+      timeZone: 'UTC' // Force UTC interpretation to avoid timezone shifts
+    });
   };
 
   const getStatusBadgeClass = (status) => {
