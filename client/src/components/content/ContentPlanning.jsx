@@ -86,6 +86,18 @@ const ContentPlanning = () => {
     setFormData(prev => ({ ...prev, [name]: value }));
   };
 
+  const logDateInfo = (label, dateStr) => {
+    const date = new Date(dateStr);
+    console.log(`${label}:`, {
+      original: dateStr,
+      parsed: date.toString(),
+      utc: date.toUTCString(),
+      iso: date.toISOString(),
+      localeDateString: date.toLocaleDateString(),
+      timezoneOffset: date.getTimezoneOffset() / 60
+    });
+  };
+
   const handleSubmit = async (e) => {
     e.preventDefault();
     
@@ -93,11 +105,20 @@ const ContentPlanning = () => {
       // Create a copy of the form data
       const formDataToSubmit = { ...formData };
       
-      // Ensure the date is set to noon UTC to avoid timezone issues
+      // Fix for timezone issues: Use the selected date and adjust it properly
       if (formDataToSubmit.postDateNeeded) {
-        const dateObj = new Date(formDataToSubmit.postDateNeeded + 'T12:00:00Z');
+        // Parse the date in local time (without timezone conversion)
+        const dateParts = formDataToSubmit.postDateNeeded.split('-');
+        const year = parseInt(dateParts[0]);
+        const month = parseInt(dateParts[1]) - 1; // JS months are 0-based
+        const day = parseInt(dateParts[2]);
+        
+        // Create a date object with the correct UTC date 
+        const dateObj = new Date(Date.UTC(year, month, day));
         formDataToSubmit.postDateNeeded = dateObj.toISOString();
       }
+      
+      logDateInfo('Submitting date', formDataToSubmit.postDateNeeded);
       
       if (editingIdea) {
         // Update existing idea
@@ -209,13 +230,22 @@ const ContentPlanning = () => {
   });
 
   const formatDate = (dateString) => {
-    // Parse the date and ensure it's treated as UTC
+    // Parse the ISO date string
     const date = new Date(dateString);
-    return date.toLocaleDateString('en-US', { 
+    
+    // Get year, month, day components in UTC
+    const year = date.getUTCFullYear();
+    const month = date.getUTCMonth();
+    const day = date.getUTCDate();
+    
+    // Create a new date with those components in local time
+    const localDate = new Date(year, month, day);
+    
+    // Format the date for display
+    return localDate.toLocaleDateString('en-US', { 
       year: 'numeric', 
       month: 'short', 
-      day: 'numeric',
-      timeZone: 'UTC' // Force UTC interpretation to avoid timezone shifts
+      day: 'numeric'
     });
   };
 
