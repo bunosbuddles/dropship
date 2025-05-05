@@ -41,6 +41,7 @@ app.use('/api/goals', require('./routes/api/goals'));
 app.use('/api/dashboard', require('./routes/api/dashboard'));
 app.use('/api/content-ideas', require('./routes/api/contentIdeas'));
 app.use('/api/feedback', require('./routes/api/feedback'));
+app.use('/api/google-calendar', require('./routes/api/googleCalendar'));
 
 // Serve static assets in production
 if (process.env.NODE_ENV === 'production') {

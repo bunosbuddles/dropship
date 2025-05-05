@@ -40,6 +40,18 @@ const ContentIdeaSchema = new mongoose.Schema({
     type: String,
     default: ''
   },
+  syncToGoogle: {
+    type: Boolean,
+    default: false
+  },
+  googleCalendarEventId: {
+    type: String,
+    default: null
+  },
+  lastSyncedAt: {
+    type: Date,
+    default: null
+  },
   createdAt: {
     type: Date,
     default: Date.now

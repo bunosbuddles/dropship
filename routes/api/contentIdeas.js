@@ -119,7 +119,8 @@ router.put('/:id', auth, async (req, res) => {
       hook,
       script,
       sound,
-      props
+      props,
+      syncToGoogle
     } = req.body;
 
     // Build update object
@@ -131,6 +132,7 @@ router.put('/:id', auth, async (req, res) => {
     if (script !== undefined) contentIdeaFields.script = script;
     if (sound !== undefined) contentIdeaFields.sound = sound;
     if (props !== undefined) contentIdeaFields.props = props;
+    if (typeof syncToGoogle !== 'undefined') contentIdeaFields.syncToGoogle = syncToGoogle;
 
     contentIdea = await ContentIdea.findByIdAndUpdate(
       req.params.id,

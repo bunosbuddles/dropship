@@ -2,6 +2,7 @@ import React, { useState, useEffect } from 'react';
 import axios from 'axios';
 import { format, startOfToday, parseISO } from 'date-fns';
 import LoadingSpinner from '../LoadingSpinner';
+import ContentIdeaCard from './ContentIdeaCard';
 
 // Use environment variable or fallback to localhost:5001
 const API_BASE_URL = process.env.REACT_APP_API_URL || 'http://localhost:5001';
@@ -26,6 +27,9 @@ const ContentPlanning = () => {
     sound: '',
     props: ''
   });
+  const [isGoogleConnected, setIsGoogleConnected] = useState(false);
+  const [syncInProgress, setSyncInProgress] = useState(false);
+  const [syncResults, setSyncResults] = useState(null);
 
   // Helper function to get date in local timezone using date-fns
   const formatDateForInput = (dateString) => {
@@ -75,6 +79,20 @@ const ContentPlanning = () => {
 
     fetchContentIdeas();
   }, [selectedProduct]);
+
+  // Add this useEffect to check Google Calendar connection status
+  useEffect(() => {
+    const checkGoogleStatus = async () => {
+      try {
+        const res = await axios.get(`${API_BASE_URL}/api/google-calendar/status`);
+        setIsGoogleConnected(res.data.connected);
+      } catch (err) {
+        console.error('Failed to check Google Calendar status', err);
+      }
+    };
+    
+    checkGoogleStatus();
+  }, []);
 
   const handleProductChange = (e) => {
     setSelectedProduct(e.target.value);
@@ -258,6 +276,42 @@ const ContentPlanning = () => {
       default:
         return 'bg-gray-100 text-gray-800 border-gray-200';
     }
+  };
+
+  // Add these functions to your component
+  const handleConnectGoogle = async () => {
+    try {
+      const res = await axios.get(`${API_BASE_URL}/api/google-calendar/auth`);
+      window.open(res.data.authUrl, '_blank');
+    } catch (err) {
+      console.error('Failed to get Google auth URL', err);
+    }
+  };
+
+  const handleSyncToGoogle = async () => {
+    try {
+      setSyncInProgress(true);
+      const res = await axios.post(`${API_BASE_URL}/api/google-calendar/sync`);
+      setSyncResults(res.data.results);
+      
+      // Refresh content ideas to get updated sync status
+      fetchContentIdeas();
+    } catch (err) {
+      console.error('Failed to sync to Google Calendar', err);
+    } finally {
+      setSyncInProgress(false);
+    }
+  };
+
+  const handleToggleSync = (ideaId) => {
+    // Update local state
+    setContentIdeas(prev => 
+      prev.map(idea => 
+        idea._id === ideaId 
+          ? { ...idea, syncToGoogle: !idea.syncToGoogle }
+          : idea
+      )
+    );
   };
 
   return (
@@ -466,78 +520,60 @@ const ContentPlanning = () => {
 
           <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
             {sortedContentIdeas.map((idea) => (
-              <div 
-                key={idea._id} 
-                className="bg-white rounded-lg shadow border border-gray-200 overflow-hidden hover:shadow-md transition-shadow duration-200"
-              >
-                <div className="p-4">
-                  <div className="flex justify-between items-start mb-3">
-                    <span className={`px-3 py-1 rounded-full text-xs font-semibold ${getStatusBadgeClass(idea.status)}`}>
-                      {idea.status}
-                    </span>
-                    <span className="text-sm text-gray-500 font-medium">
-                      {formatDate(idea.postDateNeeded)}
-                    </span>
-                  </div>
-                  
-                  <h3 className="text-lg font-semibold text-gray-800 mb-2 cursor-pointer" onClick={() => toggleCardExpand(idea._id)}>
-                    {idea.videoConcept}
-                    <span className="ml-1 text-gray-400 text-sm">
-                      {expandedCards[idea._id] ? '▼' : '▶'}
-                    </span>
-                  </h3>
-                  
-                  <div className="border-t border-gray-100 pt-3 mt-2">
-                    <div className="mb-2">
-                      <h4 className="text-sm font-medium text-gray-700 mb-1">Hook</h4>
-                      <p className={`text-sm text-gray-600 ${expandedCards[idea._id] ? '' : 'line-clamp-2'}`}>
-                        {idea.hook || "—"}
-                      </p>
-                    </div>
-                    
-                    <div className="grid grid-cols-1 gap-3 mt-3">
-                      <div>
-                        <h4 className="text-sm font-medium text-gray-700 mb-1">Script</h4>
-                        <p className={`text-sm text-gray-600 ${expandedCards[idea._id] ? '' : 'line-clamp-2'}`}>
-                          {idea.script || "—"}
-                        </p>
-                      </div>
-                      
-                      <div className="grid grid-cols-2 gap-3">
-                        <div>
-                          <h4 className="text-sm font-medium text-gray-700 mb-1">Sound</h4>
-                          <p className={`text-sm text-gray-600 ${expandedCards[idea._id] ? '' : 'line-clamp-1'}`}>
-                            {idea.sound || "—"}
-                          </p>
-                        </div>
-                        
-                        <div>
-                          <h4 className="text-sm font-medium text-gray-700 mb-1">Props</h4>
-                          <p className={`text-sm text-gray-600 ${expandedCards[idea._id] ? '' : 'line-clamp-1'}`}>
-                            {idea.props || "—"}
-                          </p>
-                        </div>
-                      </div>
-                    </div>
-                    
-                    <div className="flex justify-end mt-4 pt-3 border-t border-gray-100">
-                      <button
-                        onClick={() => handleEdit(idea)}
-                        className="mr-2 px-3 py-1 bg-blue-50 text-blue-600 rounded hover:bg-blue-100 text-sm"
-                      >
-                        Edit
-                      </button>
-                      <button
-                        onClick={() => handleDelete(idea._id)}
-                        className="px-3 py-1 bg-red-50 text-red-600 rounded hover:bg-red-100 text-sm"
-                      >
-                        Delete
-                      </button>
-                    </div>
-                  </div>
-                </div>
-              </div>
+              <ContentIdeaCard
+                key={idea._id}
+                idea={idea}
+                expanded={expandedCards[idea._id]}
+                onToggleExpand={() => toggleCardExpand(idea._id)}
+                onEdit={handleEdit}
+                onDelete={handleDelete}
+                onToggleSync={handleToggleSync}
+              />
             ))}
+          </div>
+
+          <div className="mb-6 p-4 bg-blue-50 rounded-lg border border-blue-100">
+            <h3 className="text-lg font-medium text-blue-800 mb-2">Google Calendar Integration</h3>
+            
+            {!isGoogleConnected ? (
+              <div>
+                <p className="text-sm text-blue-600 mb-3">
+                  Connect your Google Calendar to sync your content ideas.
+                </p>
+                <button
+                  onClick={handleConnectGoogle}
+                  className="px-4 py-2 bg-white border border-blue-300 rounded-md text-blue-700 hover:bg-blue-50"
+                >
+                  Connect Google Calendar
+                </button>
+              </div>
+            ) : (
+              <div>
+                <p className="text-sm text-blue-600 mb-3">
+                  Google Calendar connected. Select which content ideas to sync using the checkboxes below, then click "Sync Now".
+                </p>
+                <button
+                  onClick={handleSyncToGoogle}
+                  disabled={syncInProgress}
+                  className="px-4 py-2 bg-blue-600 text-white rounded-md hover:bg-blue-700 disabled:opacity-50"
+                >
+                  {syncInProgress ? "Syncing..." : "Sync Selected Ideas to Google Calendar"}
+                </button>
+                
+                {syncResults && (
+                  <div className="mt-3 text-sm">
+                    <p className="font-medium text-blue-700">Sync Results:</p>
+                    <p>Created: {syncResults.filter(r => r.action === 'created' && r.success).length}</p>
+                    <p>Updated: {syncResults.filter(r => r.action === 'updated' && r.success).length}</p>
+                    {syncResults.filter(r => !r.success).length > 0 && (
+                      <p className="text-red-600">
+                        Failed: {syncResults.filter(r => !r.success).length}
+                      </p>
+                    )}
+                  </div>
+                )}
+              </div>
+            )}
           </div>
         </>
       )}

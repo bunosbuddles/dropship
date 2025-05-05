@@ -19,6 +19,10 @@ const UserSchema = new mongoose.Schema({
   createdAt: {
     type: Date,
     default: Date.now
+  },
+  googleCalendarTokens: {
+    type: Object,
+    default: null
   }
 });
 
