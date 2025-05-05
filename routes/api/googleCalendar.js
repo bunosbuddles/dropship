@@ -34,11 +34,11 @@ router.get('/oauth2callback', async (req, res) => {
       googleCalendarTokens: tokens 
     });
     
-    // Redirect to frontend calendar page
-    res.redirect(`${process.env.CLIENT_URL || 'http://localhost:3000'}/calendar?authSuccess=true`);
+    // Redirect to frontend calendar page with production URL
+    res.redirect('https://dropship-frontend.onrender.com/calendar?authSuccess=true');
   } catch (err) {
     console.error('Google OAuth error:', err);
-    res.redirect(`${process.env.CLIENT_URL || 'http://localhost:3000'}/calendar?authError=true`);
+    res.redirect('https://dropship-frontend.onrender.com/calendar?authError=true');
   }
 });
 
