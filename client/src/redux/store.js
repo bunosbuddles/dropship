@@ -2,7 +2,6 @@ import { configureStore } from '@reduxjs/toolkit';
 import authReducer from './slices/authSlice';
 import dashboardReducer from './slices/dashboardSlice';
 import productReducer from './slices/productSlice';
-import calendarReducer from './slices/calendarSlice';
 import goalReducer from './slices/goalSlice';
 import contentIdeasCalendarReducer from './slices/contentIdeasCalendarSlice';
 
@@ -11,7 +10,6 @@ const store = configureStore({
     auth: authReducer,
     dashboard: dashboardReducer,
     products: productReducer,
-    calendar: calendarReducer,
     goals: goalReducer,
     contentIdeasCalendar: contentIdeasCalendarReducer
   }

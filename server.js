@@ -9,7 +9,6 @@ require('./models/user');
 require('./models/product');
 require('./models/contentIdea');
 require('./models/goal');
-require('./models/calendarEntry');
 
 const app = express();
 
@@ -43,7 +42,6 @@ app.use(express.json({ extended: false }));
 app.use('/api/auth', require('./routes/api/auth'));
 app.use('/api/users', require('./routes/api/users'));
 app.use('/api/products', require('./routes/api/products'));
-app.use('/api/calendar', require('./routes/api/calendar'));
 app.use('/api/goals', require('./routes/api/goals'));
 app.use('/api/dashboard', require('./routes/api/dashboard'));
 app.use('/api/content-ideas', require('./routes/api/contentIdeas'));

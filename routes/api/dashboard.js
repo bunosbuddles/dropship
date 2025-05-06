@@ -480,47 +480,8 @@ router.get('/', auth, async (req, res) => {
 // @access   Private
 router.get('/today-tasks', auth, async (req, res) => {
   try {
-    // Get today's date and set time to midnight
-    const today = new Date();
-    today.setHours(0, 0, 0, 0);
-    
-    // Create end date (tomorrow)
-    const tomorrow = new Date(today);
-    tomorrow.setDate(tomorrow.getDate() + 1);
-    
-    // Find calendar entries for today
-    const entries = await CalendarEntry.find({
-      user: req.user.id,
-      date: {
-        $gte: today,
-        $lt: tomorrow
-      }
-    }).populate('products', 'name variant supplier sourcingStatus');
-    
-    // If no entries found, return empty array
-    if (!entries || entries.length === 0) {
-      return res.json([]);
-    }
-    
-    // Transform entries to task format
-    const tasks = [];
-    
-    for (const entry of entries) {
-      for (const product of entry.products) {
-        tasks.push({
-          _id: `${entry._id}-${product._id}`,
-          entryId: entry._id,
-          productId: product._id,
-          productName: product.name,
-          variant: product.variant,
-          supplier: product.supplier,
-          sourcingStatus: product.sourcingStatus,
-          notes: entry.notes
-        });
-      }
-    }
-    
-    res.json(tasks);
+    // Return empty array since we no longer have calendar entries
+    return res.json([]);
   } catch (err) {
     console.error(err.message);
     res.status(500).send('Server Error');

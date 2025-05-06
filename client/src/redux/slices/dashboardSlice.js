@@ -30,7 +30,7 @@ export const fetchDashboardData = createAsyncThunk(
   }
 );
 
-// Fetch today's tasks (including calendar entries)
+// Fetch today's tasks
 export const fetchTodaysTasks = createAsyncThunk(
   'dashboard/fetchTodaysTasks',
   async (_, { rejectWithValue }) => {
@@ -41,47 +41,7 @@ export const fetchTodaysTasks = createAsyncThunk(
       // Fetch regular tasks
       const tasksRes = await axios.get(`${API_BASE_URL}/api/dashboard/today-tasks?_t=${timestamp}`);
       
-      // Format today's date for calendar API
-      const today = new Date();
-      const todayString = format(today, 'yyyy-MM-dd');
-      
-      // Fetch calendar entries for today
-      console.log(`Fetching calendar entries for: ${todayString}`);
-      const calendarRes = await axios.get(`${API_BASE_URL}/api/calendar/date/${todayString}?_t=${timestamp}`);
-      
-      console.log('Calendar entries response:', calendarRes.data);
-      
-      // Fetch products to get names for calendar entries
-      const productsRes = await axios.get(`${API_BASE_URL}/api/products?_t=${timestamp}`);
-      const products = productsRes.data;
-      
-      // Transform calendar entries to task format
-      const calendarTasks = calendarRes.data.map(entry => {
-        // Get product names from products or populated product objects
-        const productNames = entry.products.map(product => {
-          if (product && typeof product === 'object' && product.name) {
-            return product.name;
-          }
-          
-          const foundProduct = products.find(p => String(p._id) === String(product));
-          return foundProduct ? foundProduct.name : 'Unknown Product';
-        }).join(', ');
-        
-        return {
-          _id: entry._id,
-          type: 'calendar',
-          productName: productNames || 'Calendar Task',
-          sourcingStatus: 'calendar',
-          notes: entry.notes || '',
-          date: entry.date
-        };
-      });
-      
-      // Combine regular tasks with calendar entries
-      const allTasks = [...tasksRes.data, ...calendarTasks];
-      console.log('Combined tasks for today:', allTasks);
-      
-      return allTasks;
+      return tasksRes.data;
     } catch (err) {
       console.error('Error fetching today\'s tasks:', err);
       return rejectWithValue(
