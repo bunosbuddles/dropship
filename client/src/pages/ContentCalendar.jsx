@@ -10,11 +10,15 @@ import { fetchProducts } from '../redux/slices/productSlice';
 import { format, startOfMonth, endOfMonth, eachDayOfInterval, isSameDay } from 'date-fns';
 import LoadingSpinner from '../components/LoadingSpinner';
 import CalendarDayCard from '../components/CalendarDayCard';
+import { fetchContentIdeasForCalendar } from '../redux/slices/contentIdeasCalendarSlice';
+import ContentIdeasDayCard from '../components/content/ContentIdeasDayCard';
+import ContentIdeasDayDetail from '../components/content/ContentIdeasDayDetail';
 
 const ContentCalendar = () => {
   const dispatch = useDispatch();
   const { entries, loading: calendarLoading, error: calendarError } = useSelector((state) => state.calendar);
   const { products, loading: productsLoading, error: productsError } = useSelector((state) => state.products);
+  const { contentIdeas, loading: contentIdeasLoading } = useSelector((state) => state.contentIdeasCalendar);
   const [currentDate, setCurrentDate] = useState(new Date());
   const [selectedDate, setSelectedDate] = useState(new Date());
   const [selectedProducts, setSelectedProducts] = useState([]);
@@ -23,6 +27,9 @@ const ContentCalendar = () => {
   const [currentEntryId, setCurrentEntryId] = useState(null);
   const [showAllEntries, setShowAllEntries] = useState(false);
   const [dataLoaded, setDataLoaded] = useState(false);
+  const [showContentIdeasTab, setShowContentIdeasTab] = useState(false);
+  const [showDetailModal, setShowDetailModal] = useState(false);
+  const [selectedContentDate, setSelectedContentDate] = useState(null);
 
   // Get first and last day of the month
   const monthStart = startOfMonth(currentDate);
@@ -71,6 +78,13 @@ const ContentCalendar = () => {
       setCurrentEntryId(null);
     }
   }, [selectedDate, entries]);
+
+  // Add this useEffect to load content ideas when tab is selected
+  useEffect(() => {
+    if (showContentIdeasTab) {
+      dispatch(fetchContentIdeasForCalendar());
+    }
+  }, [dispatch, showContentIdeasTab]);
 
   const handleProductSelect = (e) => {
     const productId = e.target.value;
@@ -218,6 +232,31 @@ const ContentCalendar = () => {
     }
   };
 
+  // Add this function to get content ideas for a specific day
+  const getContentIdeasForDay = (day) => {
+    if (!contentIdeas) return [];
+    
+    // Format the day as YYYY-MM-DD to match how dates are stored
+    const formattedDay = format(day, 'yyyy-MM-dd');
+    
+    // Filter content ideas by date
+    return contentIdeas.filter(idea => {
+      if (!idea.postDateNeeded) return false;
+      
+      // Parse the date and format it for comparison
+      const ideaDate = new Date(idea.postDateNeeded);
+      const formattedIdeaDate = format(ideaDate, 'yyyy-MM-dd');
+      
+      return formattedIdeaDate === formattedDay;
+    });
+  };
+
+  // Add this function to handle content idea day selection
+  const handleContentDateSelect = (day) => {
+    setSelectedContentDate(day);
+    setShowDetailModal(true);
+  };
+
   // Combined loading state for both products and calendar
   const isLoading = productsLoading || calendarLoading || !dataLoaded;
 
@@ -235,6 +274,35 @@ const ContentCalendar = () => {
       </button>
       
       <h1 className="text-3xl font-bold text-gray-800 mb-6">Content Calendar</h1>
+      
+      <div className="mb-4 border-b border-gray-200">
+        <ul className="flex flex-wrap -mb-px text-sm font-medium text-center">
+          <li className="mr-2">
+            <button
+              className={`inline-block p-4 border-b-2 rounded-t-lg ${
+                !showContentIdeasTab 
+                  ? 'text-blue-600 border-blue-600' 
+                  : 'text-gray-500 border-transparent hover:text-gray-600 hover:border-gray-300'
+              }`}
+              onClick={() => setShowContentIdeasTab(false)}
+            >
+              Product Calendar
+            </button>
+          </li>
+          <li className="mr-2">
+            <button
+              className={`inline-block p-4 border-b-2 rounded-t-lg ${
+                showContentIdeasTab 
+                  ? 'text-blue-600 border-blue-600' 
+                  : 'text-gray-500 border-transparent hover:text-gray-600 hover:border-gray-300'
+              }`}
+              onClick={() => setShowContentIdeasTab(true)}
+            >
+              Content Ideas
+            </button>
+          </li>
+        </ul>
+      </div>
       
       <div className="grid grid-cols-1 lg:grid-cols-3 gap-8">
         {/* Calendar Month View */}
@@ -267,42 +335,83 @@ const ContentCalendar = () => {
             </div>
             
             {/* Calendar Grid */}
-            <div className="grid grid-cols-7 gap-2">
-              {/* Day names */}
-              {['Sun', 'Mon', 'Tue', 'Wed', 'Thu', 'Fri', 'Sat'].map((day) => (
-                <div key={day} className="text-center font-medium py-2">
-                  {day}
-                </div>
-              ))}
-              
-              {/* Empty spaces for days before the start of the month */}
-              {Array.from({ length: monthStart.getDay() }).map((_, index) => (
-                <div key={`empty-start-${index}`} className="h-24 bg-gray-50 rounded-md"></div>
-              ))}
-              
-              {/* Days of the month */}
-              {daysInMonth.map((day) => {
-                // Find any entries for this day using string comparison
-                const dayString = format(day, 'yyyy-MM-dd');
-                const dayEntries = entries.filter(entry => entry.date === dayString);
+            {showContentIdeasTab ? (
+              <div>
+                <h2 className="text-xl font-semibold mb-4">Content Ideas Calendar</h2>
                 
-                return (
-                  <CalendarDayCard 
-                    key={format(day, 'yyyy-MM-dd')}
-                    day={day}
-                    entries={dayEntries}
-                    products={products}
-                    isSelected={isSameDay(day, selectedDate)}
-                    onSelect={() => setSelectedDate(day)}
+                {contentIdeasLoading ? (
+                  <div className="flex justify-center py-12">
+                    <LoadingSpinner />
+                  </div>
+                ) : (
+                  <div className="grid grid-cols-7 gap-1">
+                    {/* Day of week headers */}
+                    {['Sun', 'Mon', 'Tue', 'Wed', 'Thu', 'Fri', 'Sat'].map((day) => (
+                      <div key={day} className="h-10 flex items-center justify-center font-medium text-gray-500">
+                        {day}
+                      </div>
+                    ))}
+                    
+                    {/* Render content idea day cards */}
+                    {daysInMonth.map((day) => (
+                      <ContentIdeasDayCard
+                        key={day.toISOString()}
+                        day={day}
+                        contentIdeas={getContentIdeasForDay(day)}
+                        isSelected={selectedContentDate && isSameDay(day, selectedContentDate)}
+                        onSelect={() => handleContentDateSelect(day)}
+                      />
+                    ))}
+                  </div>
+                )}
+                
+                {/* Detail modal for selected date */}
+                {showDetailModal && selectedContentDate && (
+                  <ContentIdeasDayDetail
+                    date={selectedContentDate}
+                    contentIdeas={getContentIdeasForDay(selectedContentDate)}
+                    onClose={() => setShowDetailModal(false)}
                   />
-                );
-              })}
-              
-              {/* Empty spaces for days after the end of the month */}
-              {Array.from({ length: 6 - monthEnd.getDay() }).map((_, index) => (
-                <div key={`empty-end-${index}`} className="h-24 bg-gray-50 rounded-md"></div>
-              ))}
-            </div>
+                )}
+              </div>
+            ) : (
+              <div className="grid grid-cols-7 gap-2">
+                {/* Day names */}
+                {['Sun', 'Mon', 'Tue', 'Wed', 'Thu', 'Fri', 'Sat'].map((day) => (
+                  <div key={day} className="text-center font-medium py-2">
+                    {day}
+                  </div>
+                ))}
+                
+                {/* Empty spaces for days before the start of the month */}
+                {Array.from({ length: monthStart.getDay() }).map((_, index) => (
+                  <div key={`empty-start-${index}`} className="h-24 bg-gray-50 rounded-md"></div>
+                ))}
+                
+                {/* Days of the month */}
+                {daysInMonth.map((day) => {
+                  // Find any entries for this day using string comparison
+                  const dayString = format(day, 'yyyy-MM-dd');
+                  const dayEntries = entries.filter(entry => entry.date === dayString);
+                  
+                  return (
+                    <CalendarDayCard 
+                      key={format(day, 'yyyy-MM-dd')}
+                      day={day}
+                      entries={dayEntries}
+                      products={products}
+                      isSelected={isSameDay(day, selectedDate)}
+                      onSelect={() => setSelectedDate(day)}
+                    />
+                  );
+                })}
+                
+                {/* Empty spaces for days after the end of the month */}
+                {Array.from({ length: 6 - monthEnd.getDay() }).map((_, index) => (
+                  <div key={`empty-end-${index}`} className="h-24 bg-gray-50 rounded-md"></div>
+                ))}
+              </div>
+            )}
             
             {/* Debug section to show all entries */}
             {showAllEntries && (

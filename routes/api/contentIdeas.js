@@ -37,6 +37,39 @@ router.get('/product/:productId', auth, async (req, res) => {
   }
 });
 
+// @route    GET api/content-ideas/date/:date
+// @desc     Get content ideas for a specific date
+// @access   Private
+router.get('/date/:date', auth, async (req, res) => {
+  try {
+    const dateString = req.params.date;
+    
+    // Parse the date string (format: YYYY-MM-DD)
+    const date = new Date(dateString);
+    
+    // Set to beginning of day in UTC
+    date.setUTCHours(0, 0, 0, 0);
+    
+    // Set to end of day in UTC
+    const endDate = new Date(date);
+    endDate.setUTCHours(23, 59, 59, 999);
+    
+    // Find content ideas for this date
+    const contentIdeas = await ContentIdea.find({
+      user: req.user.id,
+      postDateNeeded: {
+        $gte: date,
+        $lte: endDate
+      }
+    }).populate('product', 'name variant');
+    
+    res.json(contentIdeas);
+  } catch (err) {
+    console.error('Error fetching content ideas by date:', err);
+    res.status(500).send('Server Error');
+  }
+});
+
 // @route    POST api/content-ideas
 // @desc     Create a new content idea
 // @access   Private

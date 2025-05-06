@@ -4,6 +4,7 @@ import dashboardReducer from './slices/dashboardSlice';
 import productReducer from './slices/productSlice';
 import calendarReducer from './slices/calendarSlice';
 import goalReducer from './slices/goalSlice';
+import contentIdeasCalendarReducer from './slices/contentIdeasCalendarSlice';
 
 const store = configureStore({
   reducer: {
@@ -11,7 +12,8 @@ const store = configureStore({
     dashboard: dashboardReducer,
     products: productReducer,
     calendar: calendarReducer,
-    goals: goalReducer
+    goals: goalReducer,
+    contentIdeasCalendar: contentIdeasCalendarReducer
   }
 });
 

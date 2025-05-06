@@ -2,6 +2,8 @@ import React, { useState, useEffect } from 'react';
 import axios from 'axios';
 import { format, startOfToday, parseISO } from 'date-fns';
 import LoadingSpinner from '../LoadingSpinner';
+import { useSelector, useDispatch } from 'react-redux';
+import { clearHighlightedIdeaId } from '../../redux/slices/contentIdeasCalendarSlice';
 
 // Use environment variable or fallback to localhost:5001
 const API_BASE_URL = process.env.REACT_APP_API_URL || 'http://localhost:5001';
@@ -40,7 +42,10 @@ const ContentIdeaCard = ({ idea, onEdit, onDelete, onToggleSync, expanded, onTog
   };
 
   return (
-    <div className="bg-white rounded-lg shadow border border-gray-200 overflow-hidden hover:shadow-md transition-shadow duration-200">
+    <div 
+      id={`content-idea-${idea._id}`}
+      className="bg-white rounded-lg shadow border border-gray-200 overflow-hidden hover:shadow-md transition-shadow duration-200"
+    >
       <div className="p-4">
         <div className="flex justify-between items-start mb-3">
           <span className={`px-3 py-1 rounded-full text-xs font-semibold ${getStatusBadgeClass(idea.status)}`}>
@@ -157,6 +162,9 @@ const ContentPlanning = () => {
   const [syncInProgress, setSyncInProgress] = useState(false);
   const [syncResults, setSyncResults] = useState(null);
 
+  const dispatch = useDispatch();
+  const { highlightedIdeaId } = useSelector((state) => state.contentIdeasCalendar);
+
   // Helper function to get date in local timezone using date-fns
   const formatDateForInput = (dateString) => {
     if (!dateString) {
@@ -219,6 +227,44 @@ const ContentPlanning = () => {
 
     fetchContentIdeas();
   }, [selectedProduct]);
+
+  // Add this useEffect to scroll to and highlight the idea
+  useEffect(() => {
+    if (highlightedIdeaId) {
+      // Find the idea in the list
+      const idea = contentIdeas.find(idea => idea._id === highlightedIdeaId);
+      
+      if (idea) {
+        // If the idea is for a different product, switch to that product
+        if (idea.product && idea.product !== selectedProduct) {
+          setSelectedProduct(idea.product);
+        }
+        
+        // Set a small timeout to allow the DOM to update
+        setTimeout(() => {
+          // Find the element in the DOM
+          const element = document.getElementById(`content-idea-${highlightedIdeaId}`);
+          
+          if (element) {
+            // Scroll to the element
+            element.scrollIntoView({ behavior: 'smooth', block: 'center' });
+            
+            // Add a highlight class
+            element.classList.add('ring-2', 'ring-blue-500', 'bg-blue-50');
+            
+            // Remove highlight after 3 seconds
+            setTimeout(() => {
+              if (element) {
+                element.classList.remove('ring-2', 'ring-blue-500', 'bg-blue-50');
+                // Clear the highlighted ID
+                dispatch(clearHighlightedIdeaId());
+              }
+            }, 3000);
+          }
+        }, 100);
+      }
+    }
+  }, [highlightedIdeaId, contentIdeas, selectedProduct, dispatch]);
 
   const handleProductChange = (e) => {
     setSelectedProduct(e.target.value);
