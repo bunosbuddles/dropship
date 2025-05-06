@@ -43,17 +43,17 @@ const ContentCalendar = () => {
     const formattedDay = format(day, 'yyyy-MM-dd');
     return contentIdeas.filter(idea => {
       try {
-        // Handle date parsing safely
+        // Handle date parsing safely - use postDateNeeded field instead of date
         let ideaDate;
         
-        if (!idea.date) return false;
+        if (!idea.postDateNeeded) return false;
         
         // Try parsing ISO format first (YYYY-MM-DD)
-        if (typeof idea.date === 'string') {
-          ideaDate = parseISO(idea.date);
+        if (typeof idea.postDateNeeded === 'string') {
+          ideaDate = parseISO(idea.postDateNeeded);
         } else {
           // If already a Date object
-          ideaDate = new Date(idea.date);
+          ideaDate = new Date(idea.postDateNeeded);
         }
         
         // Check if the parsed date is valid
