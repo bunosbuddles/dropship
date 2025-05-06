@@ -1,33 +1,18 @@
 import React, { useState, useEffect } from 'react';
 import { useSelector, useDispatch } from 'react-redux';
-import { 
-  fetchCalendarEntries, 
-  addCalendarEntry, 
-  updateCalendarEntry, 
-  deleteCalendarEntry 
-} from '../redux/slices/calendarSlice';
-import { fetchProducts } from '../redux/slices/productSlice';
 import { format, startOfMonth, endOfMonth, eachDayOfInterval, isSameDay } from 'date-fns';
 import LoadingSpinner from '../components/LoadingSpinner';
-import CalendarDayCard from '../components/CalendarDayCard';
+import { fetchProducts } from '../redux/slices/productSlice';
 import { fetchContentIdeasForCalendar } from '../redux/slices/contentIdeasCalendarSlice';
 import ContentIdeasDayCard from '../components/content/ContentIdeasDayCard';
 import ContentIdeasDayDetail from '../components/content/ContentIdeasDayDetail';
 
 const ContentCalendar = () => {
   const dispatch = useDispatch();
-  const { entries, loading: calendarLoading, error: calendarError } = useSelector((state) => state.calendar);
-  const { products, loading: productsLoading, error: productsError } = useSelector((state) => state.products);
+  const { products, loading: productsLoading } = useSelector((state) => state.products);
   const { contentIdeas, loading: contentIdeasLoading } = useSelector((state) => state.contentIdeasCalendar);
   const [currentDate, setCurrentDate] = useState(new Date());
-  const [selectedDate, setSelectedDate] = useState(new Date());
-  const [selectedProducts, setSelectedProducts] = useState([]);
-  const [notes, setNotes] = useState('');
-  const [isEditing, setIsEditing] = useState(false);
-  const [currentEntryId, setCurrentEntryId] = useState(null);
-  const [showAllEntries, setShowAllEntries] = useState(false);
   const [dataLoaded, setDataLoaded] = useState(false);
-  const [showContentIdeasTab, setShowContentIdeasTab] = useState(false);
   const [showDetailModal, setShowDetailModal] = useState(false);
   const [selectedContentDate, setSelectedContentDate] = useState(null);
 
@@ -38,16 +23,12 @@ const ContentCalendar = () => {
   // Get all days in the month
   const daysInMonth = eachDayOfInterval({ start: monthStart, end: monthEnd });
 
-  // First load products, then calendar entries
+  // Load products and content ideas
   useEffect(() => {
     const loadData = async () => {
       try {
-        console.log('Loading products first...');
         await dispatch(fetchProducts()).unwrap();
-        
-        console.log('Now loading calendar entries...');
-        await dispatch(fetchCalendarEntries()).unwrap();
-        
+        await dispatch(fetchContentIdeasForCalendar()).unwrap();
         setDataLoaded(true);
       } catch (error) {
         console.error('Error loading data:', error);
@@ -57,208 +38,25 @@ const ContentCalendar = () => {
     loadData();
   }, [dispatch, currentDate.getMonth(), currentDate.getFullYear()]);
 
-  // Find entry for the selected date - using string comparison
-  useEffect(() => {
-    const selectedDateString = format(selectedDate, 'yyyy-MM-dd');
-    console.log('Looking for entry with date:', selectedDateString);
-    
-    const entryForSelectedDate = entries.find(entry => entry.date === selectedDateString);
-    
-    if (entryForSelectedDate) {
-      console.log('Found entry for selected date:', entryForSelectedDate);
-      // Store the products array as is - could be objects or IDs
-      setSelectedProducts(entryForSelectedDate.products);
-      setNotes(entryForSelectedDate.notes || '');
-      setIsEditing(true);
-      setCurrentEntryId(entryForSelectedDate._id);
-    } else {
-      setSelectedProducts([]);
-      setNotes('');
-      setIsEditing(false);
-      setCurrentEntryId(null);
-    }
-  }, [selectedDate, entries]);
-
-  // Add this useEffect to load content ideas when tab is selected
-  useEffect(() => {
-    if (showContentIdeasTab) {
-      dispatch(fetchContentIdeasForCalendar());
-    }
-  }, [dispatch, showContentIdeasTab]);
-
-  const handleProductSelect = (e) => {
-    const productId = e.target.value;
-    if (productId && !selectedProducts.includes(productId)) {
-      console.log('Adding product ID to selection:', productId);
-      setSelectedProducts([...selectedProducts, productId]);
-    }
-  };
-
-  const handleRemoveProduct = (productId) => {
-    console.log('Removing product ID from selection:', productId);
-    
-    // First update the local state
-    const updatedProducts = selectedProducts.filter(item => {
-      // Handle both object and string cases
-      if (typeof item === 'object' && item._id) {
-        return String(item._id) !== String(productId);
-      }
-      return String(item) !== String(productId);
-    });
-    
-    // Update the local state
-    setSelectedProducts(updatedProducts);
-    
-    // If we're editing an existing entry, save the changes immediately
-    if (isEditing && currentEntryId) {
-      // Format date as string
-      const formattedDate = format(selectedDate, 'yyyy-MM-dd');
-      
-      // Extract product IDs whether they're objects or strings
-      const formattedProducts = updatedProducts.map(product => {
-        if (typeof product === 'object' && product._id) {
-          return String(product._id);
-        }
-        return String(product);
-      });
-      
-      console.log('Auto-saving after product removal. Updated products:', formattedProducts);
-      
-      const entryData = {
-        date: formattedDate,
-        products: formattedProducts,
-        notes: notes || ''
-      };
-      
-      // Update the entry in the database
-      dispatch(updateCalendarEntry({ 
-        id: currentEntryId, 
-        entryData 
-      }))
-        .unwrap()
-        .then((updatedEntry) => {
-          console.log('Auto-update after product removal successful:', updatedEntry);
-          // Refresh calendar entries after update
-          return dispatch(fetchCalendarEntries());
-        })
-        .catch((error) => {
-          console.error('Auto-update after product removal failed:', error);
-          alert('Failed to update entry after removing product: ' + (error.message || 'Unknown error'));
-        });
-    }
-  };
-
-  const handleSaveEntry = () => {
-    try {
-      // Format date as string
-      const formattedDate = format(selectedDate, 'yyyy-MM-dd');
-      
-      console.log('Saving entry with date:', formattedDate);
-      console.log('Is editing:', isEditing);
-      console.log('Current entry ID:', currentEntryId);
-      
-      // Extract product IDs whether they're objects or strings
-      const formattedProducts = selectedProducts.map(product => {
-        if (typeof product === 'object' && product._id) {
-          return String(product._id);
-        }
-        return String(product);
-      });
-      
-      console.log('Selected products (formatted):', formattedProducts);
-      
-      const entryData = {
-        date: formattedDate,
-        products: formattedProducts,
-        notes: notes || ''
-      };
-      
-      console.log('Entry data being sent:', JSON.stringify(entryData));
-
-      if (isEditing && currentEntryId) {
-        console.log('Updating entry with ID:', currentEntryId);
-        
-        // Add more verbose error handling and logging
-        dispatch(updateCalendarEntry({ 
-          id: currentEntryId, 
-          entryData 
-        }))
-          .unwrap()
-          .then((updatedEntry) => {
-            console.log('Update successful:', updatedEntry);
-            // Refresh calendar entries after update
-            return dispatch(fetchCalendarEntries());
-          })
-          .catch((error) => {
-            console.error('Update failed:', error);
-            alert('Failed to update entry: ' + (error.message || 'Unknown error'));
-          });
-      } else {
-        console.log('Adding new entry');
-        dispatch(addCalendarEntry(entryData))
-          .unwrap()
-          .then(() => {
-            // Refresh calendar entries after adding
-            dispatch(fetchCalendarEntries());
-          })
-          .catch((error) => {
-            console.error('Add failed:', error);
-            alert('Failed to add entry: ' + (error.message || 'Unknown error'));
-          });
-      }
-    } catch (error) {
-      console.error('Error in handleSaveEntry:', error);
-      alert('Error processing entry: ' + error.message);
-    }
-  };
-
-  const handleDeleteEntry = () => {
-    if (isEditing && currentEntryId) {
-      dispatch(deleteCalendarEntry(currentEntryId))
-        .unwrap()
-        .then(() => {
-          // Refresh calendar entries after delete
-          dispatch(fetchCalendarEntries());
-          
-          setSelectedProducts([]);
-          setNotes('');
-          setIsEditing(false);
-          setCurrentEntryId(null);
-        })
-        .catch((error) => {
-          console.error('Delete failed:', error);
-          alert('Failed to delete entry: ' + (error.message || 'Unknown error'));
-        });
-    }
-  };
-
-  // Add this function to get content ideas for a specific day
+  // Get content ideas for a specific day
   const getContentIdeasForDay = (day) => {
-    if (!contentIdeas) return [];
-    
-    // Format the day as YYYY-MM-DD to match how dates are stored
     const formattedDay = format(day, 'yyyy-MM-dd');
-    
-    // Filter content ideas by date
     return contentIdeas.filter(idea => {
-      if (!idea.postDateNeeded) return false;
-      
-      // Parse the date and format it for comparison
-      const ideaDate = new Date(idea.postDateNeeded);
+      // Handle both Date objects and strings
+      const ideaDate = new Date(idea.date);
       const formattedIdeaDate = format(ideaDate, 'yyyy-MM-dd');
-      
       return formattedIdeaDate === formattedDay;
     });
   };
 
-  // Add this function to handle content idea day selection
+  // Handle content idea day selection
   const handleContentDateSelect = (day) => {
     setSelectedContentDate(day);
     setShowDetailModal(true);
   };
 
-  // Combined loading state for both products and calendar
-  const isLoading = productsLoading || calendarLoading || !dataLoaded;
+  // Combined loading state
+  const isLoading = productsLoading || contentIdeasLoading || !dataLoaded;
 
   if (isLoading) {
     return <LoadingSpinner />;
@@ -266,43 +64,7 @@ const ContentCalendar = () => {
 
   return (
     <div className="container mx-auto px-4 py-8 relative">
-      <button 
-        className="px-4 py-2 bg-gray-300 text-sm rounded absolute top-4 right-4"
-        onClick={() => setShowAllEntries(!showAllEntries)}
-      >
-        {showAllEntries ? 'Hide Debug' : 'Show All Entries (Debug)'}
-      </button>
-      
       <h1 className="text-3xl font-bold text-gray-800 mb-6">Content Calendar</h1>
-      
-      <div className="mb-4 border-b border-gray-200">
-        <ul className="flex flex-wrap -mb-px text-sm font-medium text-center">
-          <li className="mr-2">
-            <button
-              className={`inline-block p-4 border-b-2 rounded-t-lg ${
-                !showContentIdeasTab 
-                  ? 'text-blue-600 border-blue-600' 
-                  : 'text-gray-500 border-transparent hover:text-gray-600 hover:border-gray-300'
-              }`}
-              onClick={() => setShowContentIdeasTab(false)}
-            >
-              Product Calendar
-            </button>
-          </li>
-          <li className="mr-2">
-            <button
-              className={`inline-block p-4 border-b-2 rounded-t-lg ${
-                showContentIdeasTab 
-                  ? 'text-blue-600 border-blue-600' 
-                  : 'text-gray-500 border-transparent hover:text-gray-600 hover:border-gray-300'
-              }`}
-              onClick={() => setShowContentIdeasTab(true)}
-            >
-              Content Ideas
-            </button>
-          </li>
-        </ul>
-      </div>
       
       <div className="grid grid-cols-1 lg:grid-cols-3 gap-8">
         {/* Calendar Month View */}
@@ -334,215 +96,54 @@ const ContentCalendar = () => {
               </div>
             </div>
             
-            {/* Calendar Grid */}
-            {showContentIdeasTab ? (
-              <div>
-                <h2 className="text-xl font-semibold mb-4">Content Ideas Calendar</h2>
-                
-                {contentIdeasLoading ? (
-                  <div className="flex justify-center py-12">
-                    <LoadingSpinner />
-                  </div>
-                ) : (
-                  <div className="grid grid-cols-7 gap-1">
-                    {/* Day of week headers */}
-                    {['Sun', 'Mon', 'Tue', 'Wed', 'Thu', 'Fri', 'Sat'].map((day) => (
-                      <div key={day} className="h-10 flex items-center justify-center font-medium text-gray-500">
-                        {day}
-                      </div>
-                    ))}
-                    
-                    {/* Render content idea day cards */}
-                    {daysInMonth.map((day) => (
-                      <ContentIdeasDayCard
-                        key={day.toISOString()}
-                        day={day}
-                        contentIdeas={getContentIdeasForDay(day)}
-                        isSelected={selectedContentDate && isSameDay(day, selectedContentDate)}
-                        onSelect={() => handleContentDateSelect(day)}
-                      />
-                    ))}
-                  </div>
-                )}
-                
-                {/* Detail modal for selected date */}
-                {showDetailModal && selectedContentDate && (
-                  <ContentIdeasDayDetail
-                    date={selectedContentDate}
-                    contentIdeas={getContentIdeasForDay(selectedContentDate)}
-                    onClose={() => setShowDetailModal(false)}
-                  />
-                )}
-              </div>
-            ) : (
-              <div className="grid grid-cols-7 gap-2">
-                {/* Day names */}
+            {/* Content Ideas Calendar */}
+            <div>
+              <div className="grid grid-cols-7 gap-1">
+                {/* Day of week headers */}
                 {['Sun', 'Mon', 'Tue', 'Wed', 'Thu', 'Fri', 'Sat'].map((day) => (
-                  <div key={day} className="text-center font-medium py-2">
+                  <div key={day} className="h-10 flex items-center justify-center font-medium text-gray-500">
                     {day}
                   </div>
                 ))}
                 
-                {/* Empty spaces for days before the start of the month */}
-                {Array.from({ length: monthStart.getDay() }).map((_, index) => (
-                  <div key={`empty-start-${index}`} className="h-24 bg-gray-50 rounded-md"></div>
-                ))}
-                
-                {/* Days of the month */}
-                {daysInMonth.map((day) => {
-                  // Find any entries for this day using string comparison
-                  const dayString = format(day, 'yyyy-MM-dd');
-                  const dayEntries = entries.filter(entry => entry.date === dayString);
-                  
-                  return (
-                    <CalendarDayCard 
-                      key={format(day, 'yyyy-MM-dd')}
-                      day={day}
-                      entries={dayEntries}
-                      products={products}
-                      isSelected={isSameDay(day, selectedDate)}
-                      onSelect={() => setSelectedDate(day)}
-                    />
-                  );
-                })}
-                
-                {/* Empty spaces for days after the end of the month */}
-                {Array.from({ length: 6 - monthEnd.getDay() }).map((_, index) => (
-                  <div key={`empty-end-${index}`} className="h-24 bg-gray-50 rounded-md"></div>
+                {/* Render content idea day cards */}
+                {daysInMonth.map((day) => (
+                  <ContentIdeasDayCard
+                    key={day.toISOString()}
+                    day={day}
+                    contentIdeas={getContentIdeasForDay(day)}
+                    isSelected={selectedContentDate && isSameDay(day, selectedContentDate)}
+                    onSelect={() => handleContentDateSelect(day)}
+                  />
                 ))}
               </div>
-            )}
-            
-            {/* Debug section to show all entries */}
-            {showAllEntries && (
-              <div className="mt-4 p-4 bg-gray-100 rounded-lg">
-                <h3 className="font-bold mb-2">All Available Entries (Debug View)</h3>
-                <div className="mb-2">
-                  <p><strong>Products count:</strong> {products.length}</p>
-                  <p><strong>Entries count:</strong> {entries.length}</p>
-                </div>
-                {entries.length === 0 ? (
-                  <p>No entries found in Redux store</p>
-                ) : (
-                  <ul className="list-disc pl-5">
-                    {entries.map(entry => (
-                      <li key={entry._id} className="mb-1">
-                        Date: {entry.date}, Products: {entry.products.length}, ID: {entry._id}
-                        <button 
-                          className="ml-2 px-2 py-1 bg-blue-500 text-white text-xs rounded"
-                          onClick={() => {
-                            const [year, month, day] = entry.date.split('-').map(Number);
-                            const entryDate = new Date(year, month - 1, day);
-                            setCurrentDate(entryDate);
-                            setSelectedDate(entryDate);
-                          }}
-                        >
-                          Go to Date
-                        </button>
-                      </li>
-                    ))}
-                  </ul>
-                )}
-              </div>
-            )}
+              
+              {/* Detail modal for selected date */}
+              {showDetailModal && selectedContentDate && (
+                <ContentIdeasDayDetail
+                  date={selectedContentDate}
+                  contentIdeas={getContentIdeasForDay(selectedContentDate)}
+                  onClose={() => setShowDetailModal(false)}
+                />
+              )}
+            </div>
           </div>
         </div>
         
-        {/* Day Detail & Entry Form */}
+        {/* Right Side Information Panel */}
         <div>
           <div className="bg-white p-6 rounded-lg shadow-md">
-            <h2 className="text-xl font-semibold mb-4">
-              {format(selectedDate, 'MMMM d, yyyy')}
-            </h2>
-            
-            <div className="mb-4">
-              <label className="block text-sm font-medium text-gray-700 mb-1">
-                Add Products for Content
-              </label>
-              <select 
-                className="w-full p-2 border border-gray-300 rounded-md"
-                onChange={handleProductSelect}
-                value=""
-              >
-                <option value="">Select a product</option>
-                {products.map((product) => (
-                  <option key={product._id} value={product._id}>
-                    {product.name}
-                  </option>
-                ))}
-              </select>
-            </div>
-            
-            {/* Selected Products */}
-            {selectedProducts.length > 0 && (
-              <div className="mb-4">
-                <h3 className="text-sm font-medium text-gray-700 mb-2">
-                  Selected Products
-                </h3>
-                <div className="space-y-2">
-                  {selectedProducts.map((productItem) => {
-                    // Handle both object and string ID formats
-                    const productId = typeof productItem === 'object' && productItem._id 
-                      ? productItem._id 
-                      : productItem;
-                      
-                    // Find the product by ID
-                    const product = products.find(p => String(p._id) === String(productId));
-                    
-                    // If we have a product object directly
-                    const displayName = typeof productItem === 'object' && productItem.name
-                      ? productItem.name
-                      : (product ? product.name : `Unknown Product (${String(productId).substring(0, 6)}...)`);
-                    
-                    return (
-                      <div 
-                        key={productId}
-                        className="flex justify-between items-center p-2 bg-gray-50 rounded-md"
-                      >
-                        <span>{displayName}</span>
-                        <button 
-                          className="text-red-500"
-                          onClick={() => handleRemoveProduct(productId)}
-                        >
-                          Remove
-                        </button>
-                      </div>
-                    );
-                  })}
-                </div>
-              </div>
-            )}
-            
-            {/* Notes */}
-            <div className="mb-4">
-              <label className="block text-sm font-medium text-gray-700 mb-1">
-                Notes
-              </label>
-              <textarea
-                className="w-full p-2 border border-gray-300 rounded-md"
-                rows="3"
-                value={notes}
-                onChange={(e) => setNotes(e.target.value)}
-              ></textarea>
-            </div>
-            
-            {/* Action Buttons */}
-            <div className="flex justify-between">
-              <button
-                className="px-4 py-2 bg-blue-600 text-white rounded-md"
-                onClick={handleSaveEntry}
-              >
-                {isEditing ? 'Update' : 'Save'}
-              </button>
-              
-              {isEditing && (
-                <button
-                  className="px-4 py-2 bg-red-600 text-white rounded-md"
-                  onClick={handleDeleteEntry}
-                >
-                  Delete
-                </button>
-              )}
+            <h2 className="text-xl font-semibold mb-4">Content Calendar</h2>
+            <p className="text-gray-700 mb-4">
+              This calendar displays your content ideas. Click on a day to view details or navigate to the content dashboard.
+            </p>
+            <div className="mb-4 p-4 bg-blue-50 rounded-lg">
+              <h3 className="font-medium text-blue-700 mb-2">Quick Tips:</h3>
+              <ul className="list-disc pl-5 text-blue-800 text-sm">
+                <li className="mb-1">Click on any day with content ideas to view details</li>
+                <li className="mb-1">Green indicators show ideas synced with Google Calendar</li>
+                <li className="mb-1">Add new content ideas from the Content Dashboard</li>
+              </ul>
             </div>
           </div>
         </div>
