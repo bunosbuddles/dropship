@@ -1,6 +1,6 @@
 import React, { useState, useEffect } from 'react';
 import { useSelector, useDispatch } from 'react-redux';
-import { format, startOfMonth, endOfMonth, eachDayOfInterval, isSameDay } from 'date-fns';
+import { format, startOfMonth, endOfMonth, eachDayOfInterval, isSameDay, isValid, parseISO } from 'date-fns';
 import LoadingSpinner from '../components/LoadingSpinner';
 import { fetchProducts } from '../redux/slices/productSlice';
 import { fetchContentIdeasForCalendar } from '../redux/slices/contentIdeasCalendarSlice';
@@ -38,14 +38,33 @@ const ContentCalendar = () => {
     loadData();
   }, [dispatch, currentDate.getMonth(), currentDate.getFullYear()]);
 
-  // Get content ideas for a specific day
+  // Get content ideas for a specific day - with error handling for invalid dates
   const getContentIdeasForDay = (day) => {
     const formattedDay = format(day, 'yyyy-MM-dd');
     return contentIdeas.filter(idea => {
-      // Handle both Date objects and strings
-      const ideaDate = new Date(idea.date);
-      const formattedIdeaDate = format(ideaDate, 'yyyy-MM-dd');
-      return formattedIdeaDate === formattedDay;
+      try {
+        // Handle date parsing safely
+        let ideaDate;
+        
+        if (!idea.date) return false;
+        
+        // Try parsing ISO format first (YYYY-MM-DD)
+        if (typeof idea.date === 'string') {
+          ideaDate = parseISO(idea.date);
+        } else {
+          // If already a Date object
+          ideaDate = new Date(idea.date);
+        }
+        
+        // Check if the parsed date is valid
+        if (!isValid(ideaDate)) return false;
+        
+        const formattedIdeaDate = format(ideaDate, 'yyyy-MM-dd');
+        return formattedIdeaDate === formattedDay;
+      } catch (error) {
+        console.error('Error processing date for content idea:', idea._id, error);
+        return false;
+      }
     });
   };
 
