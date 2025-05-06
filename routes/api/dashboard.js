@@ -3,7 +3,6 @@ const express = require('express');
 const router = express.Router();
 const auth = require('../../middleware/auth');
 const Product = require('../../models/product');
-const CalendarEntry = require('../../models/calendarEntry');
 const Goal = require('../../models/goal');
 
 // Helper function to get date ranges
