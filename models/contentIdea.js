@@ -8,7 +8,7 @@ const ContentIdeaSchema = new mongoose.Schema({
   },
   product: {
     type: mongoose.Schema.Types.ObjectId,
-    ref: 'product',
+    ref: 'Product',
     required: true
   },
   postDateNeeded: {
@@ -58,4 +58,4 @@ const ContentIdeaSchema = new mongoose.Schema({
   }
 });
 
-module.exports = mongoose.model('contentIdea', ContentIdeaSchema); 
+module.exports = mongoose.model('ContentIdea', ContentIdeaSchema); 

@@ -4,6 +4,13 @@ const connectDB = require('./config/db');
 const path = require('path');
 const cors = require('cors');
 
+// Import models to register schemas
+require('./models/user');
+require('./models/product');
+require('./models/contentIdea');
+require('./models/goal');
+require('./models/calendarEntry');
+
 const app = express();
 
 // Connect Database first

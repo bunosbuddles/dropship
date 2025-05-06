@@ -4,6 +4,7 @@ const auth = require('../../middleware/auth');
 const User = require('../../models/user');
 const ContentIdea = require('../../models/contentIdea');
 const { getAuthUrl, getTokens, getCalendarClient } = require('../../config/googleCalendar');
+const Product = require('../../models/product');
 
 // @route    GET api/google-calendar/auth
 // @desc     Get Google OAuth URL
@@ -63,6 +64,8 @@ router.get('/status', auth, async (req, res) => {
 // @access   Private
 router.post('/sync', auth, async (req, res) => {
   try {
+    console.log('Starting sync process...');
+    
     // Get user with tokens
     const user = await User.findById(req.user.id);
     
@@ -70,40 +73,56 @@ router.post('/sync', auth, async (req, res) => {
       return res.status(400).json({ msg: 'Google Calendar not connected' });
     }
     
+    console.log('User has Google Calendar tokens');
+    
     // Get Google Calendar client
     const calendar = getCalendarClient(user.googleCalendarTokens);
     
-    // Get content ideas marked for sync
+    // Get content ideas marked for sync WITHOUT populate
     const contentIdeas = await ContentIdea.find({ 
       user: req.user.id,
-      syncToGoogle: true // Only sync ideas marked for sync
-    }).populate('product', 'name variant');
+      syncToGoogle: true
+    });
+    
+    console.log(`Found ${contentIdeas.length} ideas to sync`);
     
     const results = [];
     
     // Create or update events for each selected content idea
     for (const idea of contentIdeas) {
-      // Format the event
-      const event = {
-        summary: `Content: ${idea.videoConcept}`,
-        description: `Hook: ${idea.hook}\nProduct: ${idea.product.name}${idea.product.variant ? ` - ${idea.product.variant}` : ''}\nStatus: ${idea.status}`,
-        start: {
-          date: new Date(idea.postDateNeeded).toISOString().split('T')[0]
-        },
-        end: {
-          date: new Date(idea.postDateNeeded).toISOString().split('T')[0]
-        },
-        // Color based on status (2=green, 5=yellow, 10=gray)
-        colorId: idea.status === 'Posted' ? '2' : idea.status === 'Edited' ? '5' : '10',
-        // Store content idea ID in extendedProperties for reference
-        extendedProperties: {
-          private: {
-            contentIdeaId: idea._id.toString()
+      try {
+        // Manually fetch the product
+        let productName = 'Unknown Product';
+        let productVariant = '';
+        
+        if (idea.product) {
+          const product = await Product.findById(idea.product);
+          if (product) {
+            productName = product.name;
+            productVariant = product.variant || '';
           }
         }
-      };
-      
-      try {
+        
+        // Format the event
+        const event = {
+          summary: `Content: ${idea.videoConcept}`,
+          description: `Hook: ${idea.hook}\nProduct: ${productName}${productVariant ? ` - ${productVariant}` : ''}\nStatus: ${idea.status}`,
+          start: {
+            date: new Date(idea.postDateNeeded).toISOString().split('T')[0]
+          },
+          end: {
+            date: new Date(idea.postDateNeeded).toISOString().split('T')[0]
+          },
+          colorId: idea.status === 'Posted' ? '2' : idea.status === 'Edited' ? '5' : '10',
+          extendedProperties: {
+            private: {
+              contentIdeaId: idea._id.toString()
+            }
+          }
+        };
+        
+        console.log(`Processing idea ${idea._id} - ${idea.videoConcept}`);
+        
         // Check if event already exists
         if (idea.googleCalendarEventId) {
           // Update existing event
@@ -152,7 +171,11 @@ router.post('/sync', auth, async (req, res) => {
     res.json({ results });
   } catch (err) {
     console.error('Sync error:', err);
-    res.status(500).send('Server Error');
+    console.error('Stack trace:', err.stack);
+    res.status(500).json({ 
+      error: err.message,
+      details: err.response ? err.response.data : null
+    });
   }
 });
 
@@ -202,6 +225,45 @@ router.put('/toggle-sync/:id', auth, async (req, res) => {
   } catch (err) {
     console.error('Error toggling sync flag:', err);
     res.status(500).send('Server Error');
+  }
+});
+
+// @route    GET api/google-calendar/test
+// @desc     Test Google Calendar connectivity
+// @access   Private
+router.get('/test', auth, async (req, res) => {
+  try {
+    // Get user with tokens
+    const user = await User.findById(req.user.id);
+    
+    if (!user.googleCalendarTokens) {
+      return res.status(400).json({ msg: 'Google Calendar not connected' });
+    }
+    
+    console.log('Testing Google Calendar connection...');
+    
+    // Get Google Calendar client
+    const calendar = getCalendarClient(user.googleCalendarTokens);
+    
+    // Try a simple operation - list calendars
+    const calendarList = await calendar.calendarList.list({
+      maxResults: 10
+    });
+    
+    res.json({
+      success: true,
+      calendars: calendarList.data.items.map(cal => ({
+        id: cal.id,
+        summary: cal.summary
+      }))
+    });
+  } catch (err) {
+    console.error('Google Calendar test error:', err);
+    res.status(500).json({
+      success: false,
+      error: err.message,
+      details: err.response ? err.response.data : null
+    });
   }
 });
 
