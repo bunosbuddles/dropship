@@ -291,8 +291,8 @@ const ContentPlanning = () => {
         const month = parseInt(dateParts[1]) - 1; // JS months are 0-based
         const day = parseInt(dateParts[2]);
         
-        // Create a date object with the correct UTC date 
-        const dateObj = new Date(Date.UTC(year, month, day));
+        // Create a date object with UTC at 12:00 noon to avoid date shifting across timezones
+        const dateObj = new Date(Date.UTC(year, month, day, 12, 0, 0));
         formDataToSubmit.postDateNeeded = dateObj.toISOString();
       }
       

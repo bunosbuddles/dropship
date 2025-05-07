@@ -40,13 +40,15 @@ const ContentCalendar = () => {
 
   // Get content ideas for a specific day - with error handling for invalid dates
   const getContentIdeasForDay = (day) => {
+    // Format the calendar day using local timezone
     const formattedDay = format(day, 'yyyy-MM-dd');
+    
     return contentIdeas.filter(idea => {
       try {
         // Handle date parsing safely - use postDateNeeded field instead of date
-        let ideaDate;
-        
         if (!idea.postDateNeeded) return false;
+        
+        let ideaDate;
         
         // Try parsing ISO format first (YYYY-MM-DD)
         if (typeof idea.postDateNeeded === 'string') {
@@ -59,7 +61,16 @@ const ContentCalendar = () => {
         // Check if the parsed date is valid
         if (!isValid(ideaDate)) return false;
         
-        const formattedIdeaDate = format(ideaDate, 'yyyy-MM-dd');
+        // Normalize the date to avoid timezone issues (get only the date part)
+        // Note: This works because our dates are now stored with noon UTC time
+        const year = ideaDate.getUTCFullYear();
+        const month = ideaDate.getUTCMonth();
+        const dayOfMonth = ideaDate.getUTCDate();
+        
+        // Create a new date using local timezone
+        const normalizedIdeaDate = new Date(year, month, dayOfMonth);
+        const formattedIdeaDate = format(normalizedIdeaDate, 'yyyy-MM-dd');
+        
         return formattedIdeaDate === formattedDay;
       } catch (error) {
         console.error('Error processing date for content idea:', idea._id, error);
