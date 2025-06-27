@@ -196,7 +196,7 @@ router.delete('/:id', auth, async (req, res) => {
       return res.status(401).json({ msg: 'User not authorized' });
     }
 
-    await contentIdea.remove();
+    await contentIdea.deleteOne();
     res.json({ msg: 'Content idea removed' });
   } catch (err) {
     console.error(err.message);
