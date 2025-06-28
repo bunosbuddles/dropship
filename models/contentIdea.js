@@ -52,6 +52,14 @@ const ContentIdeaSchema = new mongoose.Schema({
     type: Date,
     default: null
   },
+  sequence: {
+    type: Number,
+    default: 1
+  },
+  url: {
+    type: String,
+    default: ''
+  },
   createdAt: {
     type: Date,
     default: Date.now

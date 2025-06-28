@@ -154,7 +154,9 @@ const ContentPlanning = () => {
     hook: '',
     script: '',
     sound: '',
-    props: ''
+    props: '',
+    sequence: 1,
+    url: ''
   });
   
   // Google Calendar integration
@@ -318,7 +320,9 @@ const ContentPlanning = () => {
         hook: '',
         script: '',
         sound: '',
-        props: ''
+        props: '',
+        sequence: 1,
+        url: ''
       });
     } catch (err) {
       console.error('Failed to save content idea', err);
@@ -335,7 +339,9 @@ const ContentPlanning = () => {
       hook: idea.hook,
       script: idea.script || '',
       sound: idea.sound || '',
-      props: idea.props || ''
+      props: idea.props || '',
+      sequence: idea.sequence || 1,
+      url: idea.url || ''
     });
     setShowForm(true);
     // Scroll to form
@@ -363,7 +369,9 @@ const ContentPlanning = () => {
       hook: '',
       script: '',
       sound: '',
-      props: ''
+      props: '',
+      sequence: 1,
+      url: ''
     });
     setShowForm(false);
   };
@@ -650,6 +658,31 @@ const ContentPlanning = () => {
                   type="text"
                   name="props"
                   value={formData.props}
+                  onChange={handleInputChange}
+                  className="w-full rounded-md border-gray-300 shadow-sm focus:border-blue-500 focus:ring-blue-500"
+                />
+              </div>
+              <div>
+                <label className="block text-sm font-medium text-gray-700 mb-1">
+                  Sequence
+                </label>
+                <input
+                  type="number"
+                  name="sequence"
+                  value={formData.sequence}
+                  onChange={handleInputChange}
+                  className="w-full rounded-md border-gray-300 shadow-sm focus:border-blue-500 focus:ring-blue-500"
+                  min="1"
+                />
+              </div>
+              <div>
+                <label className="block text-sm font-medium text-gray-700 mb-1">
+                  URL
+                </label>
+                <input
+                  type="url"
+                  name="url"
+                  value={formData.url}
                   onChange={handleInputChange}
                   className="w-full rounded-md border-gray-300 shadow-sm focus:border-blue-500 focus:ring-blue-500"
                 />

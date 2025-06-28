@@ -47,6 +47,14 @@ const ContentIdeaCard = ({ idea, onEdit, onDelete, onToggleSync, expanded, onTog
             {formatDate(idea.postDateNeeded)}
           </span>
         </div>
+        <div className="flex justify-between items-center mb-2">
+          <span className="text-xs text-gray-700">Sequence: {idea.sequence || 1}</span>
+          {idea.url && (
+            <a href={idea.url} target="_blank" rel="noopener noreferrer" className="text-xs text-blue-600 underline ml-2">
+              Link
+            </a>
+          )}
+        </div>
         
         <h3 className="text-lg font-semibold text-gray-800 mb-2 cursor-pointer" onClick={onToggleExpand}>
           {idea.videoConcept}
