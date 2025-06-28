@@ -667,12 +667,11 @@ const ContentPlanning = () => {
                   Sequence
                 </label>
                 <input
-                  type="number"
+                  type="text"
                   name="sequence"
                   value={formData.sequence}
                   onChange={handleInputChange}
                   className="w-full rounded-md border-gray-300 shadow-sm focus:border-blue-500 focus:ring-blue-500"
-                  min="1"
                 />
               </div>
               <div>
