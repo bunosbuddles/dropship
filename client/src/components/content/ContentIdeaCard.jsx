@@ -62,87 +62,93 @@ const ContentIdeaCard = ({ idea, onEdit, onDelete, onToggleSync, expanded, onTog
             {expanded ? '▼' : '▶'}
           </span>
         </h3>
-        
-        <div className="border-t border-gray-100 pt-3 mt-2">
-          {expanded && (
+        {expanded && (
+          <div className="mb-2">
             <div className="mb-2">
-              <div className="mb-2">
-                <h4 className="text-sm font-medium text-gray-700 mb-1">Post Date Needed</h4>
-                <p className="text-sm text-gray-600">{formatDate(idea.postDateNeeded)}</p>
-              </div>
-              <div className="mb-2">
-                <h4 className="text-sm font-medium text-gray-700 mb-1">Status</h4>
-                <p className="text-sm text-gray-600">{idea.status || '—'}</p>
-              </div>
-              <div className="mb-2">
-                <h4 className="text-sm font-medium text-gray-700 mb-1">Video Concept</h4>
-                <p className="text-sm text-gray-600">{idea.videoConcept || '—'}</p>
-              </div>
-              <div className="mb-2">
-                <h4 className="text-sm font-medium text-gray-700 mb-1">Hook</h4>
-                <p className="text-sm text-gray-600">{idea.hook || '—'}</p>
-              </div>
-              <div className="mb-2">
-                <h4 className="text-sm font-medium text-gray-700 mb-1">Script</h4>
-                <p className="text-sm text-gray-600">{idea.script || '—'}</p>
-              </div>
-              <div className="mb-2">
-                <h4 className="text-sm font-medium text-gray-700 mb-1">Sound</h4>
-                <p className="text-sm text-gray-600">{idea.sound || '—'}</p>
-              </div>
-              <div className="mb-2">
-                <h4 className="text-sm font-medium text-gray-700 mb-1">Props</h4>
-                <p className="text-sm text-gray-600">{idea.props || '—'}</p>
-              </div>
-              <div className="mb-2">
-                <h4 className="text-sm font-medium text-gray-700 mb-1">Sequence</h4>
-                <p className="text-sm text-gray-600">{idea.sequence || '—'}</p>
-              </div>
-              <div className="mb-2">
-                <h4 className="text-sm font-medium text-gray-700 mb-1">URL</h4>
-                {idea.url ? (
-                  <a href={idea.url} target="_blank" rel="noopener noreferrer" className="text-sm text-blue-600 underline">{idea.url}</a>
-                ) : (
-                  <span className="text-sm text-gray-600">—</span>
-                )}
-              </div>
+              <h4 className="text-sm font-medium text-gray-700 mb-1">Post Date Needed</h4>
+              <p className="text-sm text-gray-600">{formatDate(idea.postDateNeeded)}</p>
             </div>
-          )}
-        </div>
-
-        {/* Google Calendar Toggle */}
-        <div className="flex items-center mt-3 pt-2 border-t border-gray-100">
-          <label className="inline-flex items-center cursor-pointer">
-            <input
-              type="checkbox"
-              className="form-checkbox h-4 w-4 text-blue-600 transition duration-150 ease-in-out"
-              checked={idea.syncToGoogle || false}
-              onChange={handleSyncToggle}
-            />
-            <span className="ml-2 text-sm text-gray-600">
-              Sync to Google Calendar
-            </span>
-            {idea.googleCalendarEventId && (
-              <span className="ml-1 text-xs text-green-600">
-                (Synced)
+            <div className="mb-2">
+              <h4 className="text-sm font-medium text-gray-700 mb-1">Status</h4>
+              <p className="text-sm text-gray-600">{idea.status || '—'}</p>
+            </div>
+            <div className="mb-2">
+              <h4 className="text-sm font-medium text-gray-700 mb-1">Video Concept</h4>
+              <p className="text-sm text-gray-600">{idea.videoConcept || '—'}</p>
+            </div>
+            <div className="mb-2">
+              <h4 className="text-sm font-medium text-gray-700 mb-1">Hook</h4>
+              <p className="text-sm text-gray-600">{idea.hook || '—'}</p>
+            </div>
+            <div className="mb-2">
+              <h4 className="text-sm font-medium text-gray-700 mb-1">Script</h4>
+              <p className="text-sm text-gray-600">{idea.script || '—'}</p>
+            </div>
+            <div className="mb-2">
+              <h4 className="text-sm font-medium text-gray-700 mb-1">Sound</h4>
+              <p className="text-sm text-gray-600">{idea.sound || '—'}</p>
+            </div>
+            <div className="mb-2">
+              <h4 className="text-sm font-medium text-gray-700 mb-1">Props</h4>
+              <p className="text-sm text-gray-600">{idea.props || '—'}</p>
+            </div>
+            <div className="mb-2">
+              <h4 className="text-sm font-medium text-gray-700 mb-1">Sequence</h4>
+              <p className="text-sm text-gray-600">{idea.sequence || '—'}</p>
+            </div>
+            <div className="mb-2">
+              <h4 className="text-sm font-medium text-gray-700 mb-1">URL</h4>
+              {idea.url ? (
+                <a href={idea.url} target="_blank" rel="noopener noreferrer" className="text-sm text-blue-600 underline">{idea.url}</a>
+              ) : (
+                <span className="text-sm text-gray-600">—</span>
+              )}
+            </div>
+            <div className="mb-2">
+              <h4 className="text-sm font-medium text-gray-700 mb-1">Finished URL</h4>
+              {idea.finishedURL ? (
+                <a href={idea.finishedURL} target="_blank" rel="noopener noreferrer" className="text-sm text-blue-600 underline">{idea.finishedURL}</a>
+              ) : (
+                <span className="text-sm text-gray-600">—</span>
+              )}
+            </div>
+          </div>
+        )}
+        <div className="border-t border-gray-100 pt-3 mt-2">
+          {/* Google Calendar Toggle */}
+          <div className="flex items-center mt-3 pt-2 border-t border-gray-100">
+            <label className="inline-flex items-center cursor-pointer">
+              <input
+                type="checkbox"
+                className="form-checkbox h-4 w-4 text-blue-600 transition duration-150 ease-in-out"
+                checked={idea.syncToGoogle || false}
+                onChange={handleSyncToggle}
+              />
+              <span className="ml-2 text-sm text-gray-600">
+                Sync to Google Calendar
               </span>
-            )}
-          </label>
-        </div>
-        
-        <div className="flex justify-end mt-3 pt-2 border-t border-gray-100">
-          <button 
-            onClick={() => onEdit(idea)}
-            className="mr-2 px-3 py-1 text-xs text-blue-600 hover:text-blue-800"
-          >
-            Edit
-          </button>
-          <button 
-            onClick={() => onDelete(idea._id)}
-            className="px-3 py-1 text-xs text-red-600 hover:text-red-800"
-          >
-            Delete
-          </button>
+              {idea.googleCalendarEventId && (
+                <span className="ml-1 text-xs text-green-600">
+                  (Synced)
+                </span>
+              )}
+            </label>
+          </div>
+          
+          <div className="flex justify-end mt-3 pt-2 border-t border-gray-100">
+            <button 
+              onClick={() => onEdit(idea)}
+              className="mr-2 px-3 py-1 text-xs text-blue-600 hover:text-blue-800"
+            >
+              Edit
+            </button>
+            <button 
+              onClick={() => onDelete(idea._id)}
+              className="px-3 py-1 text-xs text-red-600 hover:text-red-800"
+            >
+              Delete
+            </button>
+          </div>
         </div>
       </div>
     </div>

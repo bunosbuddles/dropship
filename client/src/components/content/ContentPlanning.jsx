@@ -156,7 +156,8 @@ const ContentPlanning = () => {
     sound: '',
     props: '',
     sequence: 1,
-    url: ''
+    url: '',
+    finishedURL: ''
   });
   
   // Google Calendar integration
@@ -322,7 +323,8 @@ const ContentPlanning = () => {
         sound: '',
         props: '',
         sequence: 1,
-        url: ''
+        url: '',
+        finishedURL: ''
       });
     } catch (err) {
       console.error('Failed to save content idea', err);
@@ -341,7 +343,8 @@ const ContentPlanning = () => {
       sound: idea.sound || '',
       props: idea.props || '',
       sequence: idea.sequence || 1,
-      url: idea.url || ''
+      url: idea.url || '',
+      finishedURL: idea.finishedURL || ''
     });
     setShowForm(true);
     // Scroll to form
@@ -371,7 +374,8 @@ const ContentPlanning = () => {
       sound: '',
       props: '',
       sequence: 1,
-      url: ''
+      url: '',
+      finishedURL: ''
     });
     setShowForm(false);
   };
@@ -682,6 +686,18 @@ const ContentPlanning = () => {
                   type="url"
                   name="url"
                   value={formData.url}
+                  onChange={handleInputChange}
+                  className="w-full rounded-md border-gray-300 shadow-sm focus:border-blue-500 focus:ring-blue-500"
+                />
+              </div>
+              <div>
+                <label className="block text-sm font-medium text-gray-700 mb-1">
+                  Finished URL
+                </label>
+                <input
+                  type="text"
+                  name="finishedURL"
+                  value={formData.finishedURL}
                   onChange={handleInputChange}
                   className="w-full rounded-md border-gray-300 shadow-sm focus:border-blue-500 focus:ring-blue-500"
                 />
