@@ -64,35 +64,48 @@ const ContentIdeaCard = ({ idea, onEdit, onDelete, onToggleSync, expanded, onTog
         </h3>
         
         <div className="border-t border-gray-100 pt-3 mt-2">
-          <div className="mb-2">
-            <h4 className="text-sm font-medium text-gray-700 mb-1">Hook</h4>
-            <p className={`text-sm text-gray-600 ${expanded ? '' : 'line-clamp-2'}`}>
-              {idea.hook || "—"}
-            </p>
-          </div>
-          
           {expanded && (
             <>
-              {idea.script && (
-                <div className="mb-2">
-                  <h4 className="text-sm font-medium text-gray-700 mb-1">Script</h4>
-                  <p className="text-sm text-gray-600">{idea.script}</p>
-                </div>
-              )}
-              
-              {idea.sound && (
-                <div className="mb-2">
-                  <h4 className="text-sm font-medium text-gray-700 mb-1">Sound</h4>
-                  <p className="text-sm text-gray-600">{idea.sound}</p>
-                </div>
-              )}
-              
-              {idea.props && (
-                <div className="mb-2">
-                  <h4 className="text-sm font-medium text-gray-700 mb-1">Props</h4>
-                  <p className="text-sm text-gray-600">{idea.props}</p>
-                </div>
-              )}
+              <div className="mb-2">
+                <h4 className="text-sm font-medium text-gray-700 mb-1">Post Date Needed</h4>
+                <p className="text-sm text-gray-600">{formatDate(idea.postDateNeeded)}</p>
+              </div>
+              <div className="mb-2">
+                <h4 className="text-sm font-medium text-gray-700 mb-1">Status</h4>
+                <p className="text-sm text-gray-600">{idea.status}</p>
+              </div>
+              <div className="mb-2">
+                <h4 className="text-sm font-medium text-gray-700 mb-1">Video Concept</h4>
+                <p className="text-sm text-gray-600">{idea.videoConcept}</p>
+              </div>
+              <div className="mb-2">
+                <h4 className="text-sm font-medium text-gray-700 mb-1">Hook</h4>
+                <p className="text-sm text-gray-600">{idea.hook}</p>
+              </div>
+              <div className="mb-2">
+                <h4 className="text-sm font-medium text-gray-700 mb-1">Script</h4>
+                <p className="text-sm text-gray-600">{idea.script}</p>
+              </div>
+              <div className="mb-2">
+                <h4 className="text-sm font-medium text-gray-700 mb-1">Sound</h4>
+                <p className="text-sm text-gray-600">{idea.sound}</p>
+              </div>
+              <div className="mb-2">
+                <h4 className="text-sm font-medium text-gray-700 mb-1">Props</h4>
+                <p className="text-sm text-gray-600">{idea.props}</p>
+              </div>
+              <div className="mb-2">
+                <h4 className="text-sm font-medium text-gray-700 mb-1">Sequence</h4>
+                <p className="text-sm text-gray-600">{idea.sequence}</p>
+              </div>
+              <div className="mb-2">
+                <h4 className="text-sm font-medium text-gray-700 mb-1">URL</h4>
+                {idea.url ? (
+                  <a href={idea.url} target="_blank" rel="noopener noreferrer" className="text-sm text-blue-600 underline">{idea.url}</a>
+                ) : (
+                  <span className="text-sm text-gray-600">—</span>
+                )}
+              </div>
             </>
           )}
         </div>
