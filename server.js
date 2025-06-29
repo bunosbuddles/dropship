@@ -35,20 +35,7 @@ app.use(cors({
   optionsSuccessStatus: 200 // Some legacy browsers choke on 204
 }));
 
-// Init Middleware
-app.use(express.json({ extended: false }));
-
-// Define Routes
-app.use('/api/auth', require('./routes/api/auth'));
-app.use('/api/users', require('./routes/api/users'));
-app.use('/api/products', require('./routes/api/products'));
-app.use('/api/goals', require('./routes/api/goals'));
-app.use('/api/dashboard', require('./routes/api/dashboard'));
-app.use('/api/content-ideas', require('./routes/api/contentIdeas'));
-app.use('/api/feedback', require('./routes/api/feedback'));
-app.use('/api/google-calendar', require('./routes/api/googleCalendar'));
-
-// Impersonation middleware
+// Impersonation middleware (move this above route handlers)
 const User = require('./models/user');
 app.use(async (req, res, next) => {
   const impersonateId = req.header('x-impersonate-user-id');
@@ -64,6 +51,19 @@ app.use(async (req, res, next) => {
   }
   next();
 });
+
+// Init Middleware
+app.use(express.json({ extended: false }));
+
+// Define Routes
+app.use('/api/auth', require('./routes/api/auth'));
+app.use('/api/users', require('./routes/api/users'));
+app.use('/api/products', require('./routes/api/products'));
+app.use('/api/goals', require('./routes/api/goals'));
+app.use('/api/dashboard', require('./routes/api/dashboard'));
+app.use('/api/content-ideas', require('./routes/api/contentIdeas'));
+app.use('/api/feedback', require('./routes/api/feedback'));
+app.use('/api/google-calendar', require('./routes/api/googleCalendar'));
 
 // Serve static assets in production
 if (process.env.NODE_ENV === 'production') {
