@@ -14,6 +14,7 @@ import ContentDashboard from './pages/ContentDashboard';
 import ProductManagement from './pages/ProductManagement';
 import GoalsTracking from './pages/GoalsTracking';
 import ProductDetail from './pages/ProductDetail';
+import SuperUserDashboard from './pages/SuperUserDashboard';
 import { Login, Register } from './pages/Auth';
 
 // Protected Route Component
@@ -90,6 +91,13 @@ const App = () => {
             <ProtectedRoute>
               <Layout>
                 <GoalsTracking />
+              </Layout>
+            </ProtectedRoute>
+          } />
+          <Route path="/superuser" element={
+            <ProtectedRoute>
+              <Layout>
+                <SuperUserDashboard />
               </Layout>
             </ProtectedRoute>
           } />
