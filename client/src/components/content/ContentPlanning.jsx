@@ -4,6 +4,7 @@ import { format, startOfToday, parseISO } from 'date-fns';
 import LoadingSpinner from '../LoadingSpinner';
 import { useSelector, useDispatch } from 'react-redux';
 import { clearHighlightedIdeaId } from '../../redux/slices/contentIdeasCalendarSlice';
+import { useAxiosWithImpersonation } from '../../utils/axiosWithImpersonation';
 
 // Use environment variable or fallback to localhost:5001
 const API_BASE_URL = process.env.REACT_APP_API_URL || 'http://localhost:5001';
@@ -167,6 +168,7 @@ const ContentPlanning = () => {
 
   const dispatch = useDispatch();
   const { highlightedIdeaId } = useSelector((state) => state.contentIdeasCalendar);
+  const axiosInstance = useAxiosWithImpersonation();
 
   // Helper function to get date in local timezone using date-fns
   const formatDateForInput = (dateString) => {
@@ -184,7 +186,7 @@ const ContentPlanning = () => {
   useEffect(() => {
     const checkGoogleStatus = async () => {
       try {
-        const res = await axios.get(`${API_BASE_URL}/api/google-calendar/status`);
+        const res = await axiosInstance.get(`${API_BASE_URL}/api/google-calendar/status`);
         setIsGoogleConnected(res.data.connected);
       } catch (err) {
         console.error('Failed to check Google Calendar status', err);
@@ -192,13 +194,13 @@ const ContentPlanning = () => {
     };
     
     checkGoogleStatus();
-  }, []);
+  }, [axiosInstance]);
 
   // Fetch products on component mount
   useEffect(() => {
     const fetchProducts = async () => {
       try {
-        const res = await axios.get(`${API_BASE_URL}/api/products`);
+        const res = await axiosInstance.get(`${API_BASE_URL}/api/products`);
         setProducts(res.data);
         if (res.data.length > 0) {
           setSelectedProduct(res.data[0]._id);
@@ -210,7 +212,7 @@ const ContentPlanning = () => {
     };
 
     fetchProducts();
-  }, []);
+  }, [axiosInstance]);
 
   // Fetch content ideas when selected product changes
   useEffect(() => {
@@ -219,7 +221,7 @@ const ContentPlanning = () => {
       
       setLoading(true);
       try {
-        const res = await axios.get(`${API_BASE_URL}/api/content-ideas/product/${selectedProduct}`);
+        const res = await axiosInstance.get(`${API_BASE_URL}/api/content-ideas/product/${selectedProduct}`);
         setContentIdeas(res.data);
         setLoading(false);
       } catch (err) {
@@ -229,7 +231,7 @@ const ContentPlanning = () => {
     };
 
     fetchContentIdeas();
-  }, [selectedProduct]);
+  }, [selectedProduct, axiosInstance]);
 
   // Add this useEffect to scroll to and highlight the idea
   useEffect(() => {
@@ -301,14 +303,14 @@ const ContentPlanning = () => {
       
       if (editingIdea) {
         // Update existing idea
-        const res = await axios.put(`${API_BASE_URL}/api/content-ideas/${editingIdea._id}`, formDataToSubmit);
+        const res = await axiosInstance.put(`${API_BASE_URL}/api/content-ideas/${editingIdea._id}`, formDataToSubmit);
         setContentIdeas(prev => 
           prev.map(idea => idea._id === editingIdea._id ? res.data : idea)
         );
         setEditingIdea(null);
       } else {
         // Create new idea
-        const res = await axios.post(`${API_BASE_URL}/api/content-ideas`, formDataToSubmit);
+        const res = await axiosInstance.post(`${API_BASE_URL}/api/content-ideas`, formDataToSubmit);
         setContentIdeas(prev => [...prev, res.data]);
       }
       
@@ -354,7 +356,7 @@ const ContentPlanning = () => {
   const handleDelete = async (id) => {
     if (window.confirm('Are you sure you want to delete this content idea?')) {
       try {
-        await axios.delete(`${API_BASE_URL}/api/content-ideas/${id}`);
+        await axiosInstance.delete(`${API_BASE_URL}/api/content-ideas/${id}`);
         setContentIdeas(prev => prev.filter(idea => idea._id !== id));
       } catch (err) {
         console.error('Failed to delete content idea', err);
@@ -401,7 +403,7 @@ const ContentPlanning = () => {
   // Google Calendar functions
   const handleConnectGoogle = async () => {
     try {
-      const res = await axios.get(`${API_BASE_URL}/api/google-calendar/auth`);
+      const res = await axiosInstance.get(`${API_BASE_URL}/api/google-calendar/auth`);
       window.open(res.data.authUrl, '_blank');
     } catch (err) {
       console.error('Failed to get Google auth URL', err);
@@ -411,12 +413,12 @@ const ContentPlanning = () => {
   const handleSyncToGoogle = async () => {
     try {
       setSyncInProgress(true);
-      const res = await axios.post(`${API_BASE_URL}/api/google-calendar/sync`);
+      const res = await axiosInstance.post(`${API_BASE_URL}/api/google-calendar/sync`);
       setSyncResults(res.data.results);
       
       // Refresh content ideas to get updated sync status
       if (selectedProduct) {
-        const response = await axios.get(`${API_BASE_URL}/api/content-ideas/product/${selectedProduct}`);
+        const response = await axiosInstance.get(`${API_BASE_URL}/api/content-ideas/product/${selectedProduct}`);
         setContentIdeas(response.data);
       }
     } catch (err) {
@@ -426,15 +428,13 @@ const ContentPlanning = () => {
     }
   };
 
-  const handleToggleSync = (ideaId) => {
-    // Update local state
-    setContentIdeas(prev => 
-      prev.map(idea => 
-        idea._id === ideaId 
-          ? { ...idea, syncToGoogle: !idea.syncToGoogle }
-          : idea
-      )
-    );
+  const handleSyncToggle = async (ideaId) => {
+    try {
+      await axiosInstance.put(`${API_BASE_URL}/api/google-calendar/toggle-sync/${ideaId}`);
+      setContentIdeas(prev => prev.map(idea => idea._id === ideaId ? { ...idea, syncToGoogle: !idea.syncToGoogle } : idea));
+    } catch (err) {
+      console.error('Error toggling sync:', err);
+    }
   };
 
   // Sort content ideas
@@ -781,7 +781,7 @@ const ContentPlanning = () => {
                 onToggleExpand={() => toggleCardExpand(idea._id)}
                 onEdit={handleEdit}
                 onDelete={handleDelete}
-                onToggleSync={handleToggleSync}
+                onToggleSync={handleSyncToggle}
               />
             ))}
           </div>

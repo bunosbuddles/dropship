@@ -23,6 +23,11 @@ const UserSchema = new mongoose.Schema({
   googleCalendarTokens: {
     type: Object,
     default: null
+  },
+  role: {
+    type: String,
+    enum: ['user', 'superuser'],
+    default: 'user'
   }
 });
 

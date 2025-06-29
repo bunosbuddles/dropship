@@ -4,6 +4,7 @@ const bcrypt = require('bcryptjs');
 const jwt = require('jsonwebtoken');
 const { check, validationResult } = require('express-validator');
 const User = require('../../models/user');
+const auth = require('../../middleware/auth');
 
 // @route    POST api/users
 // @desc     Register user
@@ -86,5 +87,22 @@ router.post(
     }
   }
 );
+
+// @route    GET api/users/all
+// @desc     Get all users (superuser only)
+// @access   Private (superuser)
+router.get('/all', auth, async (req, res) => {
+  try {
+    const requestingUser = await User.findById(req.user.id);
+    if (!requestingUser || requestingUser.role !== 'superuser') {
+      return res.status(403).json({ msg: 'Forbidden: Superuser access only' });
+    }
+    const users = await User.find({}, 'name email _id');
+    res.json(users);
+  } catch (err) {
+    console.error('Error fetching all users:', err);
+    res.status(500).send('Server Error');
+  }
+});
 
 module.exports = router;

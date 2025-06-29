@@ -2,6 +2,7 @@ import React, { useEffect } from 'react';
 import { BrowserRouter as Router, Routes, Route, Navigate } from 'react-router-dom';
 import { useDispatch, useSelector } from 'react-redux';
 import { loadUser } from './redux/slices/authSlice';
+import { ImpersonationProvider } from './context/ImpersonationContext';
 
 // Layouts
 import Layout from './components/layout/Layout';
@@ -38,61 +39,63 @@ const App = () => {
   }, [dispatch]);
   
   return (
-    <Router>
-      <Routes>
-        <Route path="/login" element={<Login />} />
-        <Route path="/register" element={<Register />} />
-        <Route path="/" element={
-          <ProtectedRoute>
-            <Layout>
-              <Dashboard />
-            </Layout>
-          </ProtectedRoute>
-        } />
-        <Route path="/dashboard" element={
-          <ProtectedRoute>
-            <Layout>
-              <Dashboard />
-            </Layout>
-          </ProtectedRoute>
-        } />
-        <Route path="/products/:id" element={
-          <ProtectedRoute>
-            <Layout>
-              <ProductDetail />
-            </Layout>
-          </ProtectedRoute>
-        } />
-        <Route path="/content-dashboard" element={
-          <ProtectedRoute>
-            <Layout>
-              <ContentDashboard />
-            </Layout>
-          </ProtectedRoute>
-        } />
-        <Route path="/calendar" element={
-          <ProtectedRoute>
-            <Layout>
-              <ContentCalendar />
-            </Layout>
-          </ProtectedRoute>
-        } />
-        <Route path="/products" element={
-          <ProtectedRoute>
-            <Layout>
-              <ProductManagement />
-            </Layout>
-          </ProtectedRoute>
-        } />
-        <Route path="/goals" element={
-          <ProtectedRoute>
-            <Layout>
-              <GoalsTracking />
-            </Layout>
-          </ProtectedRoute>
-        } />
-      </Routes>
-    </Router>
+    <ImpersonationProvider>
+      <Router>
+        <Routes>
+          <Route path="/login" element={<Login />} />
+          <Route path="/register" element={<Register />} />
+          <Route path="/" element={
+            <ProtectedRoute>
+              <Layout>
+                <Dashboard />
+              </Layout>
+            </ProtectedRoute>
+          } />
+          <Route path="/dashboard" element={
+            <ProtectedRoute>
+              <Layout>
+                <Dashboard />
+              </Layout>
+            </ProtectedRoute>
+          } />
+          <Route path="/products/:id" element={
+            <ProtectedRoute>
+              <Layout>
+                <ProductDetail />
+              </Layout>
+            </ProtectedRoute>
+          } />
+          <Route path="/content-dashboard" element={
+            <ProtectedRoute>
+              <Layout>
+                <ContentDashboard />
+              </Layout>
+            </ProtectedRoute>
+          } />
+          <Route path="/calendar" element={
+            <ProtectedRoute>
+              <Layout>
+                <ContentCalendar />
+              </Layout>
+            </ProtectedRoute>
+          } />
+          <Route path="/products" element={
+            <ProtectedRoute>
+              <Layout>
+                <ProductManagement />
+              </Layout>
+            </ProtectedRoute>
+          } />
+          <Route path="/goals" element={
+            <ProtectedRoute>
+              <Layout>
+                <GoalsTracking />
+              </Layout>
+            </ProtectedRoute>
+          } />
+        </Routes>
+      </Router>
+    </ImpersonationProvider>
   );
 };
 

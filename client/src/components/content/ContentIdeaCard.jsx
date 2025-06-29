@@ -1,6 +1,7 @@
 import React from 'react';
 import axios from 'axios';
 import { format } from 'date-fns';
+import { useAxiosWithImpersonation } from '../../utils/axiosWithImpersonation';
 
 const API_BASE_URL = process.env.REACT_APP_API_URL || 'http://localhost:5001';
 
@@ -27,9 +28,11 @@ const ContentIdeaCard = ({ idea, onEdit, onDelete, onToggleSync, expanded, onTog
     });
   };
 
+  const axiosInstance = useAxiosWithImpersonation();
+
   const handleSyncToggle = async () => {
     try {
-      await axios.put(`${API_BASE_URL}/api/google-calendar/toggle-sync/${idea._id}`);
+      await axiosInstance.put(`${API_BASE_URL}/api/google-calendar/toggle-sync/${idea._id}`);
       onToggleSync(idea._id);
     } catch (err) {
       console.error('Error toggling sync:', err);

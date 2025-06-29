@@ -48,6 +48,23 @@ app.use('/api/content-ideas', require('./routes/api/contentIdeas'));
 app.use('/api/feedback', require('./routes/api/feedback'));
 app.use('/api/google-calendar', require('./routes/api/googleCalendar'));
 
+// Impersonation middleware
+const User = require('./models/user');
+app.use(async (req, res, next) => {
+  const impersonateId = req.header('x-impersonate-user-id');
+  if (impersonateId && req.user) {
+    try {
+      const requestingUser = await User.findById(req.user.id);
+      if (requestingUser && requestingUser.role === 'superuser') {
+        req.impersonatedUserId = impersonateId;
+      }
+    } catch (err) {
+      // Ignore and proceed as normal user
+    }
+  }
+  next();
+});
+
 // Serve static assets in production
 if (process.env.NODE_ENV === 'production') {
   // Set static folder

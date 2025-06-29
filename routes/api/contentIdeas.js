@@ -6,12 +6,17 @@ const { check, validationResult } = require('express-validator');
 const Product = require('../../models/product');
 const ContentIdea = require('../../models/contentIdea');
 
+// Helper to get the effective user ID (impersonated or real)
+function getEffectiveUserId(req) {
+  return req.impersonatedUserId || req.user.id;
+}
+
 // @route    GET api/content-ideas
 // @desc     Get all content ideas for a user
 // @access   Private
 router.get('/', auth, async (req, res) => {
   try {
-    const contentIdeas = await ContentIdea.find({ user: req.user.id })
+    const contentIdeas = await ContentIdea.find({ user: getEffectiveUserId(req) })
       .populate('product', 'name variant')
       .sort({ postDateNeeded: 1 });
     res.json(contentIdeas);
@@ -27,7 +32,7 @@ router.get('/', auth, async (req, res) => {
 router.get('/product/:productId', auth, async (req, res) => {
   try {
     const contentIdeas = await ContentIdea.find({ 
-      user: req.user.id,
+      user: getEffectiveUserId(req),
       product: req.params.productId 
     }).sort({ postDateNeeded: 1 });
     res.json(contentIdeas);
@@ -56,7 +61,7 @@ router.get('/date/:date', auth, async (req, res) => {
     
     // Find content ideas for this date
     const contentIdeas = await ContentIdea.find({
-      user: req.user.id,
+      user: getEffectiveUserId(req),
       postDateNeeded: {
         $gte: date,
         $lte: endDate
@@ -102,7 +107,7 @@ router.post('/', [
     // Check if product exists and belongs to user
     const productExists = await Product.findOne({ 
       _id: product,
-      user: req.user.id
+      user: getEffectiveUserId(req)
     });
 
     if (!productExists) {
@@ -110,7 +115,7 @@ router.post('/', [
     }
 
     const newContentIdea = new ContentIdea({
-      user: req.user.id,
+      user: getEffectiveUserId(req),
       product,
       postDateNeeded,
       status: status || 'Not Started',
@@ -141,7 +146,7 @@ router.put('/:id', auth, async (req, res) => {
     }
 
     // Make sure user owns the content idea
-    if (contentIdea.user.toString() !== req.user.id) {
+    if (contentIdea.user.toString() !== getEffectiveUserId(req)) {
       return res.status(401).json({ msg: 'User not authorized' });
     }
 
@@ -192,7 +197,7 @@ router.delete('/:id', auth, async (req, res) => {
     }
 
     // Make sure user owns the content idea
-    if (contentIdea.user.toString() !== req.user.id) {
+    if (contentIdea.user.toString() !== getEffectiveUserId(req)) {
       return res.status(401).json({ msg: 'User not authorized' });
     }
 
