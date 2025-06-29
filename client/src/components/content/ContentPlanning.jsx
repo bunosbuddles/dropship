@@ -33,9 +33,10 @@ const ContentIdeaCard = ({ idea, onEdit, onDelete, onToggleSync, expanded, onTog
     });
   };
 
+  const axiosInstance = useAxiosWithImpersonation();
   const handleSyncToggle = async () => {
     try {
-      await axios.put(`${API_BASE_URL}/api/google-calendar/toggle-sync/${idea._id}`);
+      await axiosInstance.put(`${API_BASE_URL}/api/google-calendar/toggle-sync/${idea._id}`);
       onToggleSync(idea._id);
     } catch (err) {
       console.error('Error toggling sync:', err);
@@ -283,53 +284,24 @@ const ContentPlanning = () => {
 
   const handleSubmit = async (e) => {
     e.preventDefault();
-    
+    setLoading(true);
     try {
-      // Create a copy of the form data
-      const formDataToSubmit = { ...formData };
-      
-      // Fix for timezone issues: Use the selected date and adjust it properly
-      if (formDataToSubmit.postDateNeeded) {
-        // Parse the date in local time (without timezone conversion)
-        const dateParts = formDataToSubmit.postDateNeeded.split('-');
-        const year = parseInt(dateParts[0]);
-        const month = parseInt(dateParts[1]) - 1; // JS months are 0-based
-        const day = parseInt(dateParts[2]);
-        
-        // Create a date object with UTC at 12:00 noon to avoid date shifting across timezones
-        const dateObj = new Date(Date.UTC(year, month, day, 12, 0, 0));
-        formDataToSubmit.postDateNeeded = dateObj.toISOString();
-      }
-      
       if (editingIdea) {
         // Update existing idea
-        const res = await axiosInstance.put(`${API_BASE_URL}/api/content-ideas/${editingIdea._id}`, formDataToSubmit);
-        setContentIdeas(prev => 
-          prev.map(idea => idea._id === editingIdea._id ? res.data : idea)
-        );
-        setEditingIdea(null);
+        await axiosInstance.put(`${API_BASE_URL}/api/content-ideas/${editingIdea._id}`, formData);
       } else {
         // Create new idea
-        const res = await axiosInstance.post(`${API_BASE_URL}/api/content-ideas`, formDataToSubmit);
-        setContentIdeas(prev => [...prev, res.data]);
+        await axiosInstance.post(`${API_BASE_URL}/api/content-ideas`, formData);
       }
-      
       setShowForm(false);
-      setFormData({
-        product: selectedProduct,
-        postDateNeeded: '',
-        status: 'Not Started',
-        videoConcept: '',
-        hook: '',
-        script: '',
-        sound: '',
-        props: '',
-        sequence: 1,
-        url: '',
-        finishedURL: ''
-      });
+      setEditingIdea(null);
+      // Refresh content ideas
+      const res = await axiosInstance.get(`${API_BASE_URL}/api/content-ideas/product/${formData.product}`);
+      setContentIdeas(res.data);
     } catch (err) {
       console.error('Failed to save content idea', err);
+    } finally {
+      setLoading(false);
     }
   };
 
@@ -354,13 +326,16 @@ const ContentPlanning = () => {
   };
 
   const handleDelete = async (id) => {
-    if (window.confirm('Are you sure you want to delete this content idea?')) {
-      try {
-        await axiosInstance.delete(`${API_BASE_URL}/api/content-ideas/${id}`);
-        setContentIdeas(prev => prev.filter(idea => idea._id !== id));
-      } catch (err) {
-        console.error('Failed to delete content idea', err);
-      }
+    setLoading(true);
+    try {
+      await axiosInstance.delete(`${API_BASE_URL}/api/content-ideas/${id}`);
+      // Refresh content ideas
+      const res = await axiosInstance.get(`${API_BASE_URL}/api/content-ideas/product/${selectedProduct}`);
+      setContentIdeas(res.data);
+    } catch (err) {
+      console.error('Failed to delete content idea', err);
+    } finally {
+      setLoading(false);
     }
   };
 
