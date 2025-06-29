@@ -15,7 +15,10 @@ function getEffectiveUserId(req) {
 // @access   Private
 router.get('/', auth, async (req, res) => {
   try {
-    const products = await Product.find({ user: getEffectiveUserId(req) }).sort({ name: 1 });
+    const effectiveUserId = getEffectiveUserId(req);
+    console.log(`[DEBUG] /api/products - effectiveUserId: ${effectiveUserId}`);
+    const products = await Product.find({ user: effectiveUserId }).sort({ name: 1 });
+    console.log(`[DEBUG] /api/products - found ${products.length} products for user ${effectiveUserId}`);
     res.json(products);
   } catch (err) {
     console.error(err.message);
