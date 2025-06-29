@@ -70,6 +70,11 @@ const formatDateForDisplay = (date, timeframe) => {
   return date.toISOString().split('T')[0];
 };
 
+// Helper to get the effective user ID (impersonated or real)
+function getEffectiveUserId(req) {
+  return req.impersonatedUserId || req.user.id;
+}
+
 // @route    GET api/dashboard
 // @desc     Get dashboard overview data
 // @access   Private
@@ -80,7 +85,7 @@ router.get('/', auth, async (req, res) => {
     const { startDate, endDate } = getDateRange(timeframe);
     
     // Get all products with sales history
-    const products = await Product.find({ user: req.user.id });
+    const products = await Product.find({ user: getEffectiveUserId(req) });
     
     // Filter sales data for current period
     const currentPeriodSales = [];
@@ -496,7 +501,7 @@ router.get('/stats/:timeframe', auth, async (req, res) => {
     const { startDate, endDate } = getDateRange(timeframe);
     
     // Get products
-    const products = await Product.find({ user: req.user.id });
+    const products = await Product.find({ user: getEffectiveUserId(req) });
     
     // Filter sales data for timeframe
     const periodSales = [];
@@ -531,7 +536,7 @@ router.get('/stats/:timeframe', auth, async (req, res) => {
     
     // Get goals for the period
     const goals = await Goal.find({
-      user: req.user.id,
+      user: getEffectiveUserId(req),
       endDate: { $gte: startDate }
     });
     

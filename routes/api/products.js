@@ -5,12 +5,17 @@ const auth = require('../../middleware/auth');
 const { check, validationResult } = require('express-validator');
 const Product = require('../../models/product');
 
+// Helper to get the effective user ID (impersonated or real)
+function getEffectiveUserId(req) {
+  return req.impersonatedUserId || req.user.id;
+}
+
 // @route    GET api/products
 // @desc     Get all products for logged in user
 // @access   Private
 router.get('/', auth, async (req, res) => {
   try {
-    const products = await Product.find({ user: req.user.id }).sort({ name: 1 });
+    const products = await Product.find({ user: getEffectiveUserId(req) }).sort({ name: 1 });
     res.json(products);
   } catch (err) {
     console.error(err.message);
@@ -31,7 +36,7 @@ router.get('/:id', auth, async (req, res) => {
     }
     
     // Check user owns the product
-    if (product.user.toString() !== req.user.id) {
+    if (product.user.toString() !== getEffectiveUserId(req)) {
       return res.status(401).json({ message: 'User not authorized' });
     }
     
@@ -99,7 +104,7 @@ router.post(
 
       // Create new product
       const newProduct = new Product({
-        user: req.user.id,
+        user: getEffectiveUserId(req),
         name,
         unitCost,
         basePrice,
@@ -135,7 +140,7 @@ router.put('/:id', auth, async (req, res) => {
     }
     
     // Check user owns the product
-    if (product.user.toString() !== req.user.id) {
+    if (product.user.toString() !== getEffectiveUserId(req)) {
       return res.status(401).json({ message: 'User not authorized' });
     }
     
@@ -194,7 +199,7 @@ router.delete('/:id', auth, async (req, res) => {
     }
     
     // Check user owns the product
-    if (product.user.toString() !== req.user.id) {
+    if (product.user.toString() !== getEffectiveUserId(req)) {
       return res.status(401).json({ message: 'User not authorized' });
     }
     
@@ -237,7 +242,7 @@ router.post('/:id/sales', [
       return res.status(404).json({ message: 'Product not found' });
     }
     
-    if (product.user.toString() !== req.user.id) {
+    if (product.user.toString() !== getEffectiveUserId(req)) {
       return res.status(401).json({ message: 'User not authorized' });
     }
 
@@ -316,7 +321,7 @@ router.put('/:id/sales/:transactionId', [
       return res.status(404).json({ message: 'Product not found' });
     }
     
-    if (product.user.toString() !== req.user.id) {
+    if (product.user.toString() !== getEffectiveUserId(req)) {
       return res.status(401).json({ message: 'User not authorized' });
     }
 
@@ -425,7 +430,7 @@ router.delete('/:id/sales/:transactionId', auth, async (req, res) => {
       return res.status(404).json({ message: 'Product not found' });
     }
     
-    if (product.user.toString() !== req.user.id) {
+    if (product.user.toString() !== getEffectiveUserId(req)) {
       return res.status(401).json({ message: 'User not authorized' });
     }
 
@@ -506,7 +511,7 @@ router.get('/:id/sales', auth, async (req, res) => {
       return res.status(404).json({ message: 'Product not found' });
     }
     
-    if (product.user.toString() !== req.user.id) {
+    if (product.user.toString() !== getEffectiveUserId(req)) {
       return res.status(401).json({ message: 'User not authorized' });
     }
     

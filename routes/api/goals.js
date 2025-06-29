@@ -6,18 +6,24 @@ const { check, validationResult } = require('express-validator');
 const Goal = require('../../models/goal');
 const Product = require('../../models/product');
 
+// Helper to get the effective user ID (impersonated or real)
+function getEffectiveUserId(req) {
+  return req.impersonatedUserId || req.user.id;
+}
+
 // @route    GET api/goals
 // @desc     Get all goals for logged in user
 // @access   Private
 router.get('/', auth, async (req, res) => {
   try {
     // If isProductSpecific query param is provided, filter by it
-    const filter = { user: req.user.id };
+    const filter = { user: getEffectiveUserId(req) };
     if (req.query.isProductSpecific !== undefined) {
       filter.isProductSpecific = req.query.isProductSpecific === 'true';
     }
     
     const goals = await Goal.find(filter).sort({ endDate: 1 });
+    const products = await Product.find({ user: getEffectiveUserId(req) });
     res.json(goals);
   } catch (err) {
     console.error(err.message);
@@ -31,7 +37,7 @@ router.get('/', auth, async (req, res) => {
 router.get('/product/:productId', auth, async (req, res) => {
   try {
     const goals = await Goal.find({ 
-      user: req.user.id,
+      user: getEffectiveUserId(req),
       product: req.params.productId,
       isProductSpecific: true
     }).sort({ endDate: 1 });
@@ -49,7 +55,7 @@ router.get('/product/:productId', auth, async (req, res) => {
 router.get('/store', auth, async (req, res) => {
   try {
     const goals = await Goal.find({ 
-      user: req.user.id,
+      user: getEffectiveUserId(req),
       isProductSpecific: false
     }).sort({ endDate: 1 });
     
@@ -66,10 +72,10 @@ router.get('/store', auth, async (req, res) => {
 router.get('/status', auth, async (req, res) => {
   try {
     // Get all user goals
-    const goals = await Goal.find({ user: req.user.id }).sort({ endDate: 1 });
+    const goals = await Goal.find({ user: getEffectiveUserId(req) }).sort({ endDate: 1 });
     
     // Get revenue and sales data
-    const products = await Product.find({ user: req.user.id });
+    const products = await Product.find({ user: getEffectiveUserId(req) });
     
     // Calculate store-wide totals
     const totalRevenue = products.reduce((sum, product) => sum + product.totalSales, 0);
@@ -180,7 +186,7 @@ router.post(
       
       // Create new goal
       const newGoal = new Goal({
-        user: req.user.id,
+        user: getEffectiveUserId(req),
         name,
         type,
         targetAmount,
@@ -213,7 +219,7 @@ router.put('/:id', auth, async (req, res) => {
     }
     
     // Check user owns the goal
-    if (goal.user.toString() !== req.user.id) {
+    if (goal.user.toString() !== getEffectiveUserId(req)) {
       return res.status(401).json({ message: 'User not authorized' });
     }
     
@@ -270,7 +276,7 @@ router.delete('/:id', auth, async (req, res) => {
     }
     
     // Check user owns the goal
-    if (goal.user.toString() !== req.user.id) {
+    if (goal.user.toString() !== getEffectiveUserId(req)) {
       return res.status(401).json({ message: 'User not authorized' });
     }
     
@@ -301,7 +307,7 @@ router.put('/:id/update-progress', auth, async (req, res) => {
     }
     
     // Check user owns the goal
-    if (goal.user.toString() !== req.user.id) {
+    if (goal.user.toString() !== getEffectiveUserId(req)) {
       return res.status(401).json({ message: 'User not authorized' });
     }
     
@@ -343,7 +349,7 @@ router.get('/refresh-product-goals/:productId', auth, async (req, res) => {
     // Find the product
     const product = await Product.findOne({
       _id: req.params.productId,
-      user: req.user.id
+      user: getEffectiveUserId(req)
     });
     
     if (!product) {
@@ -352,7 +358,7 @@ router.get('/refresh-product-goals/:productId', auth, async (req, res) => {
     
     // Find all goals for this product
     const goals = await Goal.find({
-      user: req.user.id,
+      user: getEffectiveUserId(req),
       product: req.params.productId,
       isProductSpecific: true
     });

@@ -6,12 +6,17 @@ const ContentIdea = require('../../models/contentIdea');
 const { getAuthUrl, getTokens, getCalendarClient } = require('../../config/googleCalendar');
 const Product = require('../../models/product');
 
+// Helper to get the effective user ID (impersonated or real)
+function getEffectiveUserId(req) {
+  return req.impersonatedUserId || req.user.id;
+}
+
 // @route    GET api/google-calendar/auth
 // @desc     Get Google OAuth URL
 // @access   Private
 router.get('/auth', auth, (req, res) => {
   try {
-    const authUrl = getAuthUrl(req.user.id);
+    const authUrl = getAuthUrl(getEffectiveUserId(req));
     res.json({ authUrl });
   } catch (err) {
     console.error('Error generating auth URL:', err);
@@ -19,40 +24,48 @@ router.get('/auth', auth, (req, res) => {
   }
 });
 
-// @route    GET api/google-calendar/oauth2callback
-// @desc     Handle OAuth callback
-// @access   Public (OAuth redirect)
-router.get('/oauth2callback', async (req, res) => {
-  const { code, state } = req.query;
-  const userId = state; // We passed user ID as state
-  
+// @route    GET api/google-calendar/callback
+// @desc     Handle Google OAuth callback
+// @access   Private
+router.get('/callback', auth, async (req, res) => {
   try {
-    // Exchange code for tokens
+    const { code } = req.query;
+    
+    if (!code) {
+      return res.status(400).json({ message: 'Authorization code is required' });
+    }
+
+    // Get tokens from Google
     const tokens = await getTokens(code);
     
-    // Store tokens in the user document
-    await User.findByIdAndUpdate(userId, { 
-      googleCalendarTokens: tokens 
-    });
+    // Save tokens to user
+    const user = await User.findById(getEffectiveUserId(req));
+    if (!user) {
+      return res.status(404).json({ message: 'User not found' });
+    }
     
-    // Redirect to frontend calendar page with production URL
-    res.redirect('https://dropship-frontend.onrender.com/calendar?authSuccess=true');
+    user.googleCalendarTokens = tokens;
+    await user.save();
+    
+    res.json({ message: 'Google Calendar connected successfully' });
   } catch (err) {
-    console.error('Google OAuth error:', err);
-    res.redirect('https://dropship-frontend.onrender.com/calendar?authError=true');
+    console.error('Error in Google Calendar callback:', err);
+    res.status(500).send('Server Error');
   }
 });
 
 // @route    GET api/google-calendar/status
-// @desc     Check if user has connected Google Calendar
+// @desc     Check Google Calendar connection status
 // @access   Private
 router.get('/status', auth, async (req, res) => {
   try {
-    const user = await User.findById(req.user.id);
-    res.json({ 
-      connected: !!user.googleCalendarTokens,
-      // Don't send the actual tokens to frontend
-    });
+    const user = await User.findById(getEffectiveUserId(req));
+    if (!user) {
+      return res.status(404).json({ message: 'User not found' });
+    }
+    
+    const connected = !!(user.googleCalendarTokens && user.googleCalendarTokens.access_token);
+    res.json({ connected });
   } catch (err) {
     console.error('Error checking Google Calendar status:', err);
     res.status(500).send('Server Error');
@@ -60,29 +73,17 @@ router.get('/status', auth, async (req, res) => {
 });
 
 // @route    POST api/google-calendar/sync
-// @desc     Sync selected content ideas to Google Calendar
+// @desc     Sync content ideas to Google Calendar
 // @access   Private
 router.post('/sync', auth, async (req, res) => {
   try {
     console.log('Starting sync process...');
     
-    // Get user with tokens
-    const user = await User.findById(req.user.id);
-    
-    if (!user.googleCalendarTokens) {
-      return res.status(400).json({ msg: 'Google Calendar not connected' });
-    }
-    
-    console.log('User has Google Calendar tokens');
-    
-    // Get Google Calendar client
-    const calendar = getCalendarClient(user.googleCalendarTokens);
-    
-    // Get content ideas marked for sync WITHOUT populate
-    const contentIdeas = await ContentIdea.find({ 
-      user: req.user.id,
+    // Get user's content ideas that are marked for sync
+    const contentIdeas = await ContentIdea.find({
+      user: getEffectiveUserId(req),
       syncToGoogle: true
-    });
+    }).populate('product', 'name variant');
     
     console.log(`Found ${contentIdeas.length} ideas to sync`);
     
@@ -126,7 +127,7 @@ router.post('/sync', auth, async (req, res) => {
         // Check if event already exists
         if (idea.googleCalendarEventId) {
           // Update existing event
-          const updatedEvent = await calendar.events.update({
+          const updatedEvent = await getCalendarClient(getEffectiveUserId(req)).events.update({
             calendarId: 'primary',
             eventId: idea.googleCalendarEventId,
             resource: event
@@ -139,7 +140,7 @@ router.post('/sync', auth, async (req, res) => {
           });
         } else {
           // Create new event
-          const createdEvent = await calendar.events.insert({
+          const createdEvent = await getCalendarClient(getEffectiveUserId(req)).events.insert({
             calendarId: 'primary',
             resource: event
           });
@@ -191,7 +192,7 @@ router.put('/toggle-sync/:id', auth, async (req, res) => {
     }
     
     // Make sure user owns the content idea
-    if (contentIdea.user.toString() !== req.user.id) {
+    if (contentIdea.user.toString() !== getEffectiveUserId(req)) {
       return res.status(401).json({ msg: 'User not authorized' });
     }
     
@@ -200,12 +201,11 @@ router.put('/toggle-sync/:id', auth, async (req, res) => {
     
     // If toggling off and has a Google Calendar event, remove it
     if (!contentIdea.syncToGoogle && contentIdea.googleCalendarEventId) {
-      const user = await User.findById(req.user.id);
+      const currentUser = await User.findById(getEffectiveUserId(req));
       
-      if (user.googleCalendarTokens) {
+      if (currentUser.googleCalendarTokens) {
         try {
-          const calendar = getCalendarClient(user.googleCalendarTokens);
-          await calendar.events.delete({
+          await getCalendarClient(getEffectiveUserId(req)).events.delete({
             calendarId: 'primary',
             eventId: contentIdea.googleCalendarEventId
           });
@@ -234,16 +234,16 @@ router.put('/toggle-sync/:id', auth, async (req, res) => {
 router.get('/test', auth, async (req, res) => {
   try {
     // Get user with tokens
-    const user = await User.findById(req.user.id);
+    const testUser = await User.findById(getEffectiveUserId(req));
     
-    if (!user.googleCalendarTokens) {
+    if (!testUser.googleCalendarTokens) {
       return res.status(400).json({ msg: 'Google Calendar not connected' });
     }
     
     console.log('Testing Google Calendar connection...');
     
     // Get Google Calendar client
-    const calendar = getCalendarClient(user.googleCalendarTokens);
+    const calendar = getCalendarClient(testUser.googleCalendarTokens);
     
     // Try a simple operation - list calendars
     const calendarList = await calendar.calendarList.list({
