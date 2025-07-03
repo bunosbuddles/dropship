@@ -92,7 +92,7 @@ const ProductManagement = () => {
 
   return (
     <div className="container mx-auto px-4 py-8">
-      <div className="flex justify-between items-center mb-6">
+      <div className="flex flex-col sm:flex-row justify-between items-start sm:items-center mb-6 gap-4">
         <h1 className="text-3xl font-bold text-gray-800">Products</h1>
         <button
           className="bg-blue-600 text-white px-4 py-2 rounded-md"
@@ -111,7 +111,7 @@ const ProductManagement = () => {
 
       {/* Filters and Search */}
       <div className="bg-white p-4 rounded-lg shadow-md mb-6">
-        <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
+        <div className="grid grid-cols-1 gap-4">
           {/* Search */}
           <div>
             <label className="block text-sm font-medium text-gray-700 mb-1">
@@ -126,50 +126,52 @@ const ProductManagement = () => {
             />
           </div>
           
-          {/* Status Filter */}
-          <div>
-            <label className="block text-sm font-medium text-gray-700 mb-1">
-              Filter by Status
-            </label>
-            <select
-              className="w-full p-2 border border-gray-300 rounded-md"
-              value={filterStatus}
-              onChange={(e) => setFilterStatus(e.target.value)}
-            >
-              <option value="">All Statuses</option>
-              <option value="in progress">In Progress</option>
-              <option value="negotiation">Negotiation</option>
-              <option value="complete">Complete</option>
-              <option value="MOQ required">MOQ Required</option>
-              <option value="price">Price Issue</option>
-              <option value="failed">Failed</option>
-            </select>
-          </div>
-          
-          {/* Sort */}
-          <div>
-            <label className="block text-sm font-medium text-gray-700 mb-1">
-              Sort by
-            </label>
-            <div className="flex">
+          <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
+            {/* Status Filter */}
+            <div>
+              <label className="block text-sm font-medium text-gray-700 mb-1">
+                Filter by Status
+              </label>
               <select
-                className="w-full p-2 border border-gray-300 rounded-l-md"
-                value={sortBy}
-                onChange={(e) => {
-                  setSortBy(e.target.value);
-                  setSortOrder('asc');
-                }}
+                className="w-full p-2 border border-gray-300 rounded-md"
+                value={filterStatus}
+                onChange={(e) => setFilterStatus(e.target.value)}
               >
-                <option value="name">Name</option>
-                <option value="profit">Profit Margin</option>
-                <option value="sales">Total Sales</option>
+                <option value="">All Statuses</option>
+                <option value="in progress">In Progress</option>
+                <option value="negotiation">Negotiation</option>
+                <option value="complete">Complete</option>
+                <option value="MOQ required">MOQ Required</option>
+                <option value="price">Price Issue</option>
+                <option value="failed">Failed</option>
               </select>
-              <button
-                className="px-4 py-2 bg-gray-200 rounded-r-md"
-                onClick={() => setSortOrder(sortOrder === 'asc' ? 'desc' : 'asc')}
-              >
-                {sortOrder === 'asc' ? '↑' : '↓'}
-              </button>
+            </div>
+            
+            {/* Sort */}
+            <div>
+              <label className="block text-sm font-medium text-gray-700 mb-1">
+                Sort by
+              </label>
+              <div className="flex">
+                <select
+                  className="w-full p-2 border border-gray-300 rounded-l-md"
+                  value={sortBy}
+                  onChange={(e) => {
+                    setSortBy(e.target.value);
+                    setSortOrder('asc');
+                  }}
+                >
+                  <option value="name">Name</option>
+                  <option value="profit">Profit Margin</option>
+                  <option value="sales">Total Sales</option>
+                </select>
+                <button
+                  className="px-4 py-2 bg-gray-200 rounded-r-md"
+                  onClick={() => setSortOrder(sortOrder === 'asc' ? 'desc' : 'asc')}
+                >
+                  {sortOrder === 'asc' ? '↑' : '↓'}
+                </button>
+              </div>
             </div>
           </div>
         </div>

@@ -117,7 +117,7 @@ const SourcingTab = () => {
   };
 
   return (
-    <div className="max-w-3xl mx-auto p-6 bg-white rounded-lg shadow">
+    <div className="max-w-3xl mx-auto p-4 sm:p-6 bg-white rounded-lg shadow">
       <h1 className="text-2xl font-bold mb-6">Sourcing Agents</h1>
       <div className="mb-4">
         <label className="block text-sm font-medium text-gray-700 mb-1">Select Product</label>
@@ -133,7 +133,7 @@ const SourcingTab = () => {
           ))}
         </select>
       </div>
-      <div className="mb-6 flex justify-between items-center">
+      <div className="mb-6 flex flex-col sm:flex-row justify-between items-start sm:items-center gap-4">
         <h2 className="text-lg font-semibold">Sourcing Agents for this Product</h2>
         <button
           className="px-4 py-2 bg-blue-600 text-white rounded-md"
@@ -178,28 +178,30 @@ const SourcingTab = () => {
       {showForm && (
         <div className="bg-gray-50 p-4 rounded-lg mb-6 border border-gray-200">
           <h3 className="text-lg font-medium mb-3">{editingAgent ? 'Edit Sourcing Agent' : 'Add New Sourcing Agent'}</h3>
-          <form onSubmit={handleAddOrEditAgent} className="grid grid-cols-1 md:grid-cols-2 gap-4">
+          <form onSubmit={handleAddOrEditAgent} className="grid grid-cols-1 gap-4">
             <div>
               <label className="block text-sm font-medium text-gray-700 mb-1">Agent Name</label>
               <input type="text" name="name" value={formData.name} onChange={handleInputChange} className="w-full p-2 border border-gray-300 rounded-md" required />
             </div>
-            <div>
-              <label className="block text-sm font-medium text-gray-700 mb-1">Base Cost</label>
-              <input type="number" name="baseCost" value={formData.baseCost} onChange={handleInputChange} className="w-full p-2 border border-gray-300 rounded-md" required />
-            </div>
-            <div>
-              <label className="block text-sm font-medium text-gray-700 mb-1">Total Cost</label>
-              <input type="number" name="totalCost" value={formData.totalCost} onChange={handleInputChange} className="w-full p-2 border border-gray-300 rounded-md" required />
+            <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
+              <div>
+                <label className="block text-sm font-medium text-gray-700 mb-1">Base Cost</label>
+                <input type="number" name="baseCost" value={formData.baseCost} onChange={handleInputChange} className="w-full p-2 border border-gray-300 rounded-md" required />
+              </div>
+              <div>
+                <label className="block text-sm font-medium text-gray-700 mb-1">Total Cost</label>
+                <input type="number" name="totalCost" value={formData.totalCost} onChange={handleInputChange} className="w-full p-2 border border-gray-300 rounded-md" required />
+              </div>
             </div>
             <div>
               <label className="block text-sm font-medium text-gray-700 mb-1">Shipping Time</label>
               <input type="text" name="shippingTime" value={formData.shippingTime} onChange={handleInputChange} className="w-full p-2 border border-gray-300 rounded-md" />
             </div>
-            <div className="md:col-span-2">
+            <div>
               <label className="block text-sm font-medium text-gray-700 mb-1">Notes</label>
               <textarea name="notes" value={formData.notes} onChange={handleInputChange} className="w-full p-2 border border-gray-300 rounded-md" rows={2} />
             </div>
-            <div className="md:col-span-2 flex gap-2 mt-2">
+            <div className="flex gap-2 mt-2">
               <button type="submit" className="px-4 py-2 bg-blue-600 text-white rounded-md">{editingAgent ? 'Update' : 'Add'} Agent</button>
               <button type="button" className="px-4 py-2 bg-gray-200 text-gray-800 rounded-md" onClick={handleCancel}>Cancel</button>
             </div>
