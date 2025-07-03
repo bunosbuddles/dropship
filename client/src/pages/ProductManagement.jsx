@@ -178,7 +178,7 @@ const ProductManagement = () => {
       {/* Products Table */}
       <div className="bg-white rounded-lg shadow-md overflow-hidden">
         <div className="overflow-x-auto">
-          <table className="min-w-full divide-y divide-gray-200">
+          <table className="min-w-full w-full divide-y divide-gray-200">
             <thead className="bg-gray-50">
               <tr>
                 <th 
@@ -191,100 +191,41 @@ const ProductManagement = () => {
                     <span className="ml-1">{sortOrder === 'asc' ? '↑' : '↓'}</span>
                   )}
                 </th>
-                <th scope="col" className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
-                  Supplier
-                </th>
-                <th scope="col" className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
-                  Sourcing Status
-                </th>
-                <th 
-                  scope="col" 
-                  className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider cursor-pointer"
-                  onClick={() => toggleSort('sales')}
-                >
-                  Total Sales
-                  {sortBy === 'sales' && (
-                    <span className="ml-1">{sortOrder === 'asc' ? '↑' : '↓'}</span>
-                  )}
-                </th>
-                <th 
-                  scope="col"
-                  className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider cursor-pointer"
-                  onClick={() => toggleSort('profit')}
-                >
-                  Profit Margin
-                  {sortBy === 'profit' && (
-                    <span className="ml-1">{sortOrder === 'asc' ? '↑' : '↓'}</span>
-                  )}
-                </th>
-                <th scope="col" className="px-6 py-3 text-right text-xs font-medium text-gray-500 uppercase tracking-wider">
-                  Actions
-                </th>
+                <th scope="col" className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Supplier</th>
+                <th scope="col" className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Sourcing Status</th>
+                <th scope="col" className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider hidden md:table-cell">Profit Margin</th>
+                <th scope="col" className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider hidden md:table-cell">Total Sales</th>
+                <th scope="col" className="px-6 py-3"></th>
               </tr>
             </thead>
             <tbody className="bg-white divide-y divide-gray-200">
-              {filteredProducts.length > 0 ? (
-                filteredProducts.map((product) => (
-                  <tr key={product._id}>
-                    <td className="px-6 py-4 whitespace-nowrap">
-                      <div className="text-sm font-medium text-gray-900">
-                        {product.name}
-                      </div>
-                      {product.variant && (
-                        <div className="text-sm text-gray-500">
-                          {product.variant}
-                        </div>
-                      )}
-                    </td>
-                    <td className="px-6 py-4 whitespace-nowrap">
-                      <div className="text-sm text-gray-900">
-                        {product.supplier || 'Not set'}
-                      </div>
-                    </td>
-                    <td className="px-6 py-4 whitespace-nowrap">
-                      <span className={`px-2 inline-flex text-xs leading-5 font-semibold rounded-full 
-                        ${product.sourcingStatus === 'complete' ? 'bg-green-100 text-green-800' : 
-                          product.sourcingStatus === 'failed' ? 'bg-red-100 text-red-800' : 
-                          'bg-yellow-100 text-yellow-800'}`}
-                      >
-                        {product.sourcingStatus}
-                      </span>
-                    </td>
-                    <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-500">
-                      ${product.totalSales.toFixed(2)}
-                    </td>
-                    <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-500">
-                      {product.profitMargin.toFixed(2)}%
-                    </td>
-                    <td className="px-6 py-4 whitespace-nowrap text-right text-sm font-medium">
-                      <Link
-                        to={`/products/${product._id}`}
-                        className="text-blue-600 hover:text-blue-900 mr-4"
-                      >
-                        View
-                      </Link>
-                      <button
-                        className="text-indigo-600 hover:text-indigo-900 mr-4"
-                        onClick={() => openEditModal(product)}
-                      >
-                        Edit
-                      </button>
-                      <button
-                        className="text-red-600 hover:text-red-900"
-                        onClick={() => handleDeleteProduct(product._id)}
-                      >
-                        Delete
-                      </button>
-                    </td>
-                  </tr>
-                ))
-              ) : (
-                <tr>
-                  <td colSpan="6" className="px-6 py-4 text-center text-sm text-gray-500">
-                    No products found. Add your first product to get started!
+              {filteredProducts.map((product) => (
+                <tr key={product._id}>
+                  <td className="px-6 py-4 whitespace-nowrap">
+                    <Link to={`/products/${product._id}`} className="text-blue-600 hover:underline">
+                      {product.name}
+                    </Link>
+                  </td>
+                  <td className="px-6 py-4 whitespace-nowrap">{product.supplier || '-'}</td>
+                  <td className="px-6 py-4 whitespace-nowrap">{product.sourcingStatus}</td>
+                  <td className="px-6 py-4 whitespace-nowrap hidden md:table-cell">{product.profitMargin}%</td>
+                  <td className="px-6 py-4 whitespace-nowrap hidden md:table-cell">{product.totalSales}</td>
+                  <td className="px-6 py-4 whitespace-nowrap flex gap-2">
+                    <button
+                      className="text-blue-600 hover:underline"
+                      onClick={() => openEditModal(product)}
+                    >
+                      Edit
+                    </button>
+                    <button
+                      className="text-red-600 hover:underline"
+                      onClick={() => handleDeleteProduct(product._id)}
+                    >
+                      Delete
+                    </button>
                   </td>
                 </tr>
-              )}
+              ))}
             </tbody>
           </table>
         </div>

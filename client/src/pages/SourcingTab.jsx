@@ -145,33 +145,35 @@ const SourcingTab = () => {
       {loading && <div className="text-blue-600 mb-4">Loading...</div>}
       {!loading && sourcingAgents.length === 0 && <div className="text-gray-500 mb-4">No sourcing agents found for this product.</div>}
       {!loading && sourcingAgents.length > 0 && (
-        <table className="min-w-full divide-y divide-gray-200 mb-6">
-          <thead className="bg-gray-50">
-            <tr>
-              <th className="px-4 py-2 text-left text-xs font-medium text-gray-500 uppercase">Name</th>
-              <th className="px-4 py-2 text-left text-xs font-medium text-gray-500 uppercase">Base Cost</th>
-              <th className="px-4 py-2 text-left text-xs font-medium text-gray-500 uppercase">Total Cost</th>
-              <th className="px-4 py-2 text-left text-xs font-medium text-gray-500 uppercase">Shipping Time</th>
-              <th className="px-4 py-2 text-left text-xs font-medium text-gray-500 uppercase">Notes</th>
-              <th className="px-4 py-2"></th>
-            </tr>
-          </thead>
-          <tbody className="bg-white divide-y divide-gray-200">
-            {sourcingAgents.map((agent) => (
-              <tr key={agent._id}>
-                <td className="px-4 py-2">{agent.name}</td>
-                <td className="px-4 py-2">{agent.baseCost}</td>
-                <td className="px-4 py-2">{agent.totalCost}</td>
-                <td className="px-4 py-2">{agent.shippingTime}</td>
-                <td className="px-4 py-2">{agent.notes}</td>
-                <td className="px-4 py-2 flex gap-2">
-                  <button className="text-blue-600 hover:underline" onClick={() => handleEdit(agent)}>Edit</button>
-                  <button className="text-red-600 hover:underline" onClick={() => handleDelete(agent._id)}>Delete</button>
-                </td>
+        <div className="overflow-x-auto">
+          <table className="min-w-full w-full divide-y divide-gray-200 mb-6">
+            <thead className="bg-gray-50">
+              <tr>
+                <th className="px-4 py-2 text-left text-xs font-medium text-gray-500 uppercase">Name</th>
+                <th className="px-4 py-2 text-left text-xs font-medium text-gray-500 uppercase">Base Cost</th>
+                <th className="px-4 py-2 text-left text-xs font-medium text-gray-500 uppercase">Total Cost</th>
+                <th className="px-4 py-2 text-left text-xs font-medium text-gray-500 uppercase">Shipping Time</th>
+                <th className="px-4 py-2 text-left text-xs font-medium text-gray-500 uppercase hidden md:table-cell">Notes</th>
+                <th className="px-4 py-2"></th>
               </tr>
-            ))}
-          </tbody>
-        </table>
+            </thead>
+            <tbody className="bg-white divide-y divide-gray-200">
+              {sourcingAgents.map((agent) => (
+                <tr key={agent._id}>
+                  <td className="px-4 py-2">{agent.name}</td>
+                  <td className="px-4 py-2">{agent.baseCost}</td>
+                  <td className="px-4 py-2">{agent.totalCost}</td>
+                  <td className="px-4 py-2">{agent.shippingTime}</td>
+                  <td className="px-4 py-2 hidden md:table-cell">{agent.notes}</td>
+                  <td className="px-4 py-2 flex gap-2">
+                    <button className="text-blue-600 hover:underline" onClick={() => handleEdit(agent)}>Edit</button>
+                    <button className="text-red-600 hover:underline" onClick={() => handleDelete(agent._id)}>Delete</button>
+                  </td>
+                </tr>
+              ))}
+            </tbody>
+          </table>
+        </div>
       )}
       {showForm && (
         <div className="bg-gray-50 p-4 rounded-lg mb-6 border border-gray-200">
