@@ -1,24 +1,30 @@
 import axios from 'axios';
 import { useImpersonation } from '../context/ImpersonationContext';
-import { useMemo } from 'react';
+import { useEffect } from 'react';
 
 const API_BASE_URL = process.env.REACT_APP_API_URL || 'http://localhost:5001';
 
-// Custom hook to get an axios instance with impersonation header
+// Create a single axios instance
+const axiosInstance = axios.create({ baseURL: API_BASE_URL });
+
 export const useAxiosWithImpersonation = () => {
   const { impersonatedUserId } = useImpersonation();
 
-  // Memoize the axios instance so it is not recreated on every render
-  const instance = useMemo(() => {
-    const axiosInstance = axios.create({ baseURL: API_BASE_URL });
-    axiosInstance.interceptors.request.use((config) => {
+  useEffect(() => {
+    // Add a request interceptor that always uses the latest impersonatedUserId
+    const interceptor = axiosInstance.interceptors.request.use((config) => {
       if (impersonatedUserId) {
         config.headers['x-impersonate-user-id'] = impersonatedUserId;
+      } else {
+        delete config.headers['x-impersonate-user-id'];
       }
       return config;
     });
-    return axiosInstance;
+    // Cleanup: remove the interceptor on unmount or when impersonatedUserId changes
+    return () => {
+      axiosInstance.interceptors.request.eject(interceptor);
+    };
   }, [impersonatedUserId]);
 
-  return instance;
+  return axiosInstance;
 }; 
