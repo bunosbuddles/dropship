@@ -1,6 +1,7 @@
 const express = require('express');
 const router = express.Router();
 const auth = require('../../middleware/auth');
+const impersonation = require('../../middleware/impersonation');
 const { check, validationResult } = require('express-validator');
 
 const Product = require('../../models/product');
@@ -14,7 +15,7 @@ function getEffectiveUserId(req) {
 // @route    GET api/content-ideas
 // @desc     Get all content ideas for a user
 // @access   Private
-router.get('/', auth, async (req, res) => {
+router.get('/', auth, impersonation, async (req, res) => {
   try {
     const contentIdeas = await ContentIdea.find({ user: getEffectiveUserId(req) })
       .populate('product', 'name variant')
@@ -29,7 +30,7 @@ router.get('/', auth, async (req, res) => {
 // @route    GET api/content-ideas/product/:productId
 // @desc     Get all content ideas for a specific product
 // @access   Private
-router.get('/product/:productId', auth, async (req, res) => {
+router.get('/product/:productId', auth, impersonation, async (req, res) => {
   try {
     const contentIdeas = await ContentIdea.find({ 
       user: getEffectiveUserId(req),
@@ -45,7 +46,7 @@ router.get('/product/:productId', auth, async (req, res) => {
 // @route    GET api/content-ideas/date/:date
 // @desc     Get content ideas for a specific date
 // @access   Private
-router.get('/date/:date', auth, async (req, res) => {
+router.get('/date/:date', auth, impersonation, async (req, res) => {
   try {
     const dateString = req.params.date;
     
@@ -80,6 +81,7 @@ router.get('/date/:date', auth, async (req, res) => {
 // @access   Private
 router.post('/', [
   auth,
+  impersonation,
   [
     check('product', 'Product is required').not().isEmpty(),
     check('postDateNeeded', 'Post date is required').not().isEmpty(),
@@ -137,7 +139,7 @@ router.post('/', [
 // @route    PUT api/content-ideas/:id
 // @desc     Update a content idea
 // @access   Private
-router.put('/:id', auth, async (req, res) => {
+router.put('/:id', auth, impersonation, async (req, res) => {
   try {
     let contentIdea = await ContentIdea.findById(req.params.id);
 
@@ -188,7 +190,7 @@ router.put('/:id', auth, async (req, res) => {
 // @route    DELETE api/content-ideas/:id
 // @desc     Delete a content idea
 // @access   Private
-router.delete('/:id', auth, async (req, res) => {
+router.delete('/:id', auth, impersonation, async (req, res) => {
   try {
     const contentIdea = await ContentIdea.findById(req.params.id);
 
