@@ -5,6 +5,7 @@ import LoadingSpinner from '../LoadingSpinner';
 import { useSelector, useDispatch } from 'react-redux';
 import { clearHighlightedIdeaId } from '../../redux/slices/contentIdeasCalendarSlice';
 import { useAxiosWithImpersonation } from '../../utils/axiosWithImpersonation';
+import { useImpersonation } from '../../context/ImpersonationContext';
 
 // Use environment variable or fallback to localhost:5001
 const API_BASE_URL = process.env.REACT_APP_API_URL || 'http://localhost:5001';
@@ -170,6 +171,7 @@ const ContentPlanning = () => {
   const dispatch = useDispatch();
   const { highlightedIdeaId } = useSelector((state) => state.contentIdeasCalendar);
   const axiosInstance = useAxiosWithImpersonation();
+  const { impersonatedUserId } = useImpersonation();
 
   // Helper function to get date in local timezone using date-fns
   const formatDateForInput = (dateString) => {
@@ -197,7 +199,7 @@ const ContentPlanning = () => {
     checkGoogleStatus();
   }, [axiosInstance]);
 
-  // Fetch products on component mount
+  // Fetch products on component mount or when impersonatedUserId changes
   useEffect(() => {
     const fetchProducts = async () => {
       try {
@@ -211,15 +213,13 @@ const ContentPlanning = () => {
         console.error('Failed to fetch products', err);
       }
     };
-
     fetchProducts();
-  }, [axiosInstance]);
+  }, [axiosInstance, impersonatedUserId]);
 
-  // Fetch content ideas when selected product changes
+  // Fetch content ideas when selected product or impersonatedUserId changes
   useEffect(() => {
     const fetchContentIdeas = async () => {
       if (!selectedProduct) return;
-      
       setLoading(true);
       try {
         const res = await axiosInstance.get(`${API_BASE_URL}/api/content-ideas/product/${selectedProduct}`);
@@ -230,9 +230,8 @@ const ContentPlanning = () => {
         setLoading(false);
       }
     };
-
     fetchContentIdeas();
-  }, [selectedProduct, axiosInstance]);
+  }, [selectedProduct, axiosInstance, impersonatedUserId]);
 
   // Add this useEffect to scroll to and highlight the idea
   useEffect(() => {
