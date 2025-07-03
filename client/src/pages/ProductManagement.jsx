@@ -179,13 +179,13 @@ const ProductManagement = () => {
 
       {/* Products Table */}
       <div className="bg-white rounded-lg shadow-md overflow-hidden">
-        <div className="overflow-x-auto">
-          <table className="min-w-full w-full divide-y divide-gray-200">
+        <div className="overflow-x-auto w-full">
+          <table className="min-w-[600px] w-full divide-y divide-gray-200">
             <thead className="bg-gray-50">
               <tr>
                 <th 
                   scope="col" 
-                  className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider cursor-pointer"
+                  className="px-2 md:px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider cursor-pointer break-words whitespace-normal"
                   onClick={() => toggleSort('name')}
                 >
                   Product Name
@@ -193,26 +193,26 @@ const ProductManagement = () => {
                     <span className="ml-1">{sortOrder === 'asc' ? '↑' : '↓'}</span>
                   )}
                 </th>
-                <th scope="col" className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Supplier</th>
-                <th scope="col" className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Sourcing Status</th>
-                <th scope="col" className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider hidden md:table-cell">Profit Margin</th>
-                <th scope="col" className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider hidden md:table-cell">Total Sales</th>
-                <th scope="col" className="px-6 py-3"></th>
+                <th scope="col" className="px-2 md:px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider break-words whitespace-normal">Supplier</th>
+                <th scope="col" className="px-2 md:px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider break-words whitespace-normal">Sourcing Status</th>
+                <th scope="col" className="px-2 md:px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider break-words whitespace-normal hidden md:table-cell">Profit Margin</th>
+                <th scope="col" className="px-2 md:px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider break-words whitespace-normal hidden md:table-cell">Total Sales</th>
+                <th scope="col" className="px-2 md:px-6 py-3"></th>
               </tr>
             </thead>
             <tbody className="bg-white divide-y divide-gray-200">
               {filteredProducts.map((product) => (
                 <tr key={product._id}>
-                  <td className="px-6 py-4 whitespace-nowrap">
+                  <td className="px-2 md:px-6 py-4 break-words whitespace-normal">
                     <Link to={`/products/${product._id}`} className="text-blue-600 hover:underline">
                       {product.name}
                     </Link>
                   </td>
-                  <td className="px-6 py-4 whitespace-nowrap">{product.supplier || '-'}</td>
-                  <td className="px-6 py-4 whitespace-nowrap">{product.sourcingStatus}</td>
-                  <td className="px-6 py-4 whitespace-nowrap hidden md:table-cell">{product.profitMargin}%</td>
-                  <td className="px-6 py-4 whitespace-nowrap hidden md:table-cell">{product.totalSales}</td>
-                  <td className="px-6 py-4 whitespace-nowrap flex gap-2">
+                  <td className="px-2 md:px-6 py-4 break-words whitespace-normal">{product.supplier || '-'}</td>
+                  <td className="px-2 md:px-6 py-4 break-words whitespace-normal">{product.sourcingStatus}</td>
+                  <td className="px-2 md:px-6 py-4 break-words whitespace-normal hidden md:table-cell">{product.profitMargin}%</td>
+                  <td className="px-2 md:px-6 py-4 break-words whitespace-normal hidden md:table-cell">{product.totalSales}</td>
+                  <td className="px-2 md:px-6 py-4 flex gap-2 whitespace-nowrap">
                     <button
                       className="text-blue-600 hover:underline"
                       onClick={() => openEditModal(product)}
