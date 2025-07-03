@@ -2,6 +2,7 @@
 const express = require('express');
 const router = express.Router();
 const auth = require('../../middleware/auth');
+const impersonation = require('../../middleware/impersonation');
 const { check, validationResult } = require('express-validator');
 const Product = require('../../models/product');
 
@@ -13,7 +14,7 @@ function getEffectiveUserId(req) {
 // @route    GET api/products
 // @desc     Get all products for logged in user
 // @access   Private
-router.get('/', auth, async (req, res) => {
+router.get('/', auth, impersonation, async (req, res) => {
   try {
     const effectiveUserId = getEffectiveUserId(req);
     console.log(`[DEBUG] /api/products - effectiveUserId: ${effectiveUserId}`);
@@ -29,7 +30,7 @@ router.get('/', auth, async (req, res) => {
 // @route    GET api/products/:id
 // @desc     Get product by ID
 // @access   Private
-router.get('/:id', auth, async (req, res) => {
+router.get('/:id', auth, impersonation, async (req, res) => {
   try {
     const product = await Product.findById(req.params.id);
     
@@ -62,6 +63,7 @@ router.post(
   '/',
   [
     auth,
+    impersonation,
     [
       check('name', 'Name is required').not().isEmpty(),
       check('unitCost', 'Unit cost is required').isNumeric(),
@@ -133,7 +135,7 @@ router.post(
 // @route    PUT api/products/:id
 // @desc     Update a product
 // @access   Private
-router.put('/:id', auth, async (req, res) => {
+router.put('/:id', auth, impersonation, async (req, res) => {
   try {
     let product = await Product.findById(req.params.id);
     
@@ -192,7 +194,7 @@ router.put('/:id', auth, async (req, res) => {
 // @route    DELETE api/products/:id
 // @desc     Delete a product
 // @access   Private
-router.delete('/:id', auth, async (req, res) => {
+router.delete('/:id', auth, impersonation, async (req, res) => {
   try {
     const product = await Product.findById(req.params.id);
     
@@ -225,6 +227,7 @@ router.delete('/:id', auth, async (req, res) => {
 // @access   Private
 router.post('/:id/sales', [
   auth,
+  impersonation,
   [
     check('date', 'Date is required').not().isEmpty(),
     check('unitsSold', 'Units sold must be a number').isNumeric(),
@@ -419,7 +422,7 @@ router.put('/:id/sales/:transactionId', [
 // @route    DELETE api/products/:id/sales/:transactionId
 // @desc     Delete sales data for a product
 // @access   Private
-router.delete('/:id/sales/:transactionId', auth, async (req, res) => {
+router.delete('/:id/sales/:transactionId', auth, impersonation, async (req, res) => {
   try {
     const { id, transactionId } = req.params;
     
@@ -506,7 +509,7 @@ router.delete('/:id/sales/:transactionId', auth, async (req, res) => {
 // @route    GET api/products/:id/sales
 // @desc     Get sales history for a product
 // @access   Private
-router.get('/:id/sales', auth, async (req, res) => {
+router.get('/:id/sales', auth, impersonation, async (req, res) => {
   try {
     const product = await Product.findById(req.params.id);
     

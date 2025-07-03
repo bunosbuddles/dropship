@@ -2,6 +2,7 @@
 const express = require('express');
 const router = express.Router();
 const auth = require('../../middleware/auth');
+const impersonation = require('../../middleware/impersonation');
 const { check, validationResult } = require('express-validator');
 const Goal = require('../../models/goal');
 const Product = require('../../models/product');
@@ -14,7 +15,7 @@ function getEffectiveUserId(req) {
 // @route    GET api/goals
 // @desc     Get all goals for logged in user
 // @access   Private
-router.get('/', auth, async (req, res) => {
+router.get('/', auth, impersonation, async (req, res) => {
   try {
     // If isProductSpecific query param is provided, filter by it
     const filter = { user: getEffectiveUserId(req) };
@@ -34,7 +35,7 @@ router.get('/', auth, async (req, res) => {
 // @route    GET api/goals/product/:productId
 // @desc     Get all goals for a specific product
 // @access   Private
-router.get('/product/:productId', auth, async (req, res) => {
+router.get('/product/:productId', auth, impersonation, async (req, res) => {
   try {
     const goals = await Goal.find({ 
       user: getEffectiveUserId(req),
@@ -52,7 +53,7 @@ router.get('/product/:productId', auth, async (req, res) => {
 // @route    GET api/goals/store
 // @desc     Get all store-wide goals (non-product-specific)
 // @access   Private
-router.get('/store', auth, async (req, res) => {
+router.get('/store', auth, impersonation, async (req, res) => {
   try {
     const goals = await Goal.find({ 
       user: getEffectiveUserId(req),
@@ -69,7 +70,7 @@ router.get('/store', auth, async (req, res) => {
 // @route    GET api/goals/status
 // @desc     Get goals with current progress
 // @access   Private
-router.get('/status', auth, async (req, res) => {
+router.get('/status', auth, impersonation, async (req, res) => {
   try {
     // Get all user goals
     const goals = await Goal.find({ user: getEffectiveUserId(req) }).sort({ endDate: 1 });
@@ -159,6 +160,7 @@ router.post(
   '/',
   [
     auth,
+    impersonation,
     [
       check('name', 'Name is required').not().isEmpty(),
       check('type', 'Type must be valid').isIn(['revenue', 'sales', 'profit', 'profit_margin']),
@@ -209,7 +211,7 @@ router.post(
 // @route    PUT api/goals/:id
 // @desc     Update a goal
 // @access   Private
-router.put('/:id', auth, async (req, res) => {
+router.put('/:id', auth, impersonation, async (req, res) => {
   try {
     let goal = await Goal.findById(req.params.id);
     
@@ -266,7 +268,7 @@ router.put('/:id', auth, async (req, res) => {
 // @route    DELETE api/goals/:id
 // @desc     Delete a goal
 // @access   Private
-router.delete('/:id', auth, async (req, res) => {
+router.delete('/:id', auth, impersonation, async (req, res) => {
   try {
     const goal = await Goal.findById(req.params.id);
     
@@ -295,9 +297,9 @@ router.delete('/:id', auth, async (req, res) => {
 });
 
 // @route    PUT api/goals/:id/update-progress
-// @desc     Update current amount and progress for a goal (manual override)
+// @desc     Update goal progress
 // @access   Private
-router.put('/:id/update-progress', auth, async (req, res) => {
+router.put('/:id/update-progress', auth, impersonation, async (req, res) => {
   try {
     let goal = await Goal.findById(req.params.id);
     

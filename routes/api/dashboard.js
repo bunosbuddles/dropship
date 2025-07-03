@@ -2,6 +2,7 @@
 const express = require('express');
 const router = express.Router();
 const auth = require('../../middleware/auth');
+const impersonation = require('../../middleware/impersonation');
 const Product = require('../../models/product');
 const Goal = require('../../models/goal');
 
@@ -78,7 +79,7 @@ function getEffectiveUserId(req) {
 // @route    GET api/dashboard
 // @desc     Get dashboard overview data
 // @access   Private
-router.get('/', auth, async (req, res) => {
+router.get('/', auth, impersonation, async (req, res) => {
   try {
     // Get timeframe from query (default to month)
     const timeframe = req.query.timeframe || 'month';

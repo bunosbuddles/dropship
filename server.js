@@ -35,34 +35,6 @@ app.use(cors({
   optionsSuccessStatus: 200 // Some legacy browsers choke on 204
 }));
 
-// Impersonation middleware (move this above route handlers)
-const User = require('./models/user');
-app.use(async (req, res, next) => {
-  const impersonateId = req.header('x-impersonate-user-id');
-  console.log(`[DEBUG] Middleware - impersonateId header: ${impersonateId}`);
-  console.log(`[DEBUG] Middleware - req.user:`, req.user ? req.user.id : 'no user');
-  
-  if (impersonateId && req.user) {
-    try {
-      const requestingUser = await User.findById(req.user.id);
-      console.log(`[DEBUG] Middleware - requestingUser role: ${requestingUser ? requestingUser.role : 'not found'}`);
-      
-      if (requestingUser && requestingUser.role === 'superuser') {
-        req.impersonatedUserId = impersonateId;
-        console.log(`[DEBUG] Middleware - set impersonatedUserId to: ${impersonateId}`);
-      } else {
-        console.log(`[DEBUG] Middleware - user is not superuser or not found`);
-      }
-    } catch (err) {
-      console.log(`[DEBUG] Middleware - error: ${err.message}`);
-      // Ignore and proceed as normal user
-    }
-  } else {
-    console.log(`[DEBUG] Middleware - no impersonateId or no req.user`);
-  }
-  next();
-});
-
 // Init Middleware
 app.use(express.json({ extended: false }));
 

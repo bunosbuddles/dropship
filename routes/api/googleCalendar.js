@@ -1,6 +1,7 @@
 const express = require('express');
 const router = express.Router();
 const auth = require('../../middleware/auth');
+const impersonation = require('../../middleware/impersonation');
 const User = require('../../models/user');
 const ContentIdea = require('../../models/contentIdea');
 const { getAuthUrl, getTokens, getCalendarClient } = require('../../config/googleCalendar');
@@ -14,7 +15,7 @@ function getEffectiveUserId(req) {
 // @route    GET api/google-calendar/auth
 // @desc     Get Google OAuth URL
 // @access   Private
-router.get('/auth', auth, (req, res) => {
+router.get('/auth', auth, impersonation, (req, res) => {
   try {
     const authUrl = getAuthUrl(getEffectiveUserId(req));
     res.json({ authUrl });
@@ -27,7 +28,7 @@ router.get('/auth', auth, (req, res) => {
 // @route    GET api/google-calendar/callback
 // @desc     Handle Google OAuth callback
 // @access   Private
-router.get('/callback', auth, async (req, res) => {
+router.get('/callback', auth, impersonation, async (req, res) => {
   try {
     const { code } = req.query;
     
@@ -57,7 +58,7 @@ router.get('/callback', auth, async (req, res) => {
 // @route    GET api/google-calendar/status
 // @desc     Check Google Calendar connection status
 // @access   Private
-router.get('/status', auth, async (req, res) => {
+router.get('/status', auth, impersonation, async (req, res) => {
   try {
     const user = await User.findById(getEffectiveUserId(req));
     if (!user) {
@@ -75,7 +76,7 @@ router.get('/status', auth, async (req, res) => {
 // @route    POST api/google-calendar/sync
 // @desc     Sync content ideas to Google Calendar
 // @access   Private
-router.post('/sync', auth, async (req, res) => {
+router.post('/sync', auth, impersonation, async (req, res) => {
   try {
     console.log('Starting sync process...');
     
@@ -183,7 +184,7 @@ router.post('/sync', auth, async (req, res) => {
 // @route    PUT api/google-calendar/toggle-sync/:id
 // @desc     Toggle syncToGoogle flag for a content idea
 // @access   Private
-router.put('/toggle-sync/:id', auth, async (req, res) => {
+router.put('/toggle-sync/:id', auth, impersonation, async (req, res) => {
   try {
     const contentIdea = await ContentIdea.findById(req.params.id);
     
