@@ -538,4 +538,101 @@ router.get('/:id/sales', auth, impersonation, async (req, res) => {
   }
 });
 
+// @route    GET api/products/:id/sourcing-agents
+// @desc     Get all sourcing agents for a product
+// @access   Private
+router.get('/:id/sourcing-agents', auth, impersonation, async (req, res) => {
+  try {
+    const product = await Product.findById(req.params.id);
+    if (!product) {
+      return res.status(404).json({ message: 'Product not found' });
+    }
+    if (product.user.toString() !== getEffectiveUserId(req)) {
+      return res.status(401).json({ message: 'User not authorized' });
+    }
+    res.json(product.sourcingAgents || []);
+  } catch (err) {
+    console.error(err.message);
+    res.status(500).send('Server Error');
+  }
+});
+
+// @route    POST api/products/:id/sourcing-agents
+// @desc     Add a sourcing agent to a product
+// @access   Private
+router.post('/:id/sourcing-agents', auth, impersonation, async (req, res) => {
+  try {
+    const product = await Product.findById(req.params.id);
+    if (!product) {
+      return res.status(404).json({ message: 'Product not found' });
+    }
+    if (product.user.toString() !== getEffectiveUserId(req)) {
+      return res.status(401).json({ message: 'User not authorized' });
+    }
+    const { name, baseCost, totalCost, shippingTime, notes } = req.body;
+    const newAgent = { name, baseCost, totalCost, shippingTime, notes };
+    product.sourcingAgents.push(newAgent);
+    await product.save();
+    res.json(product.sourcingAgents);
+  } catch (err) {
+    console.error(err.message);
+    res.status(500).send('Server Error');
+  }
+});
+
+// @route    PUT api/products/:id/sourcing-agents/:agentId
+// @desc     Update a sourcing agent for a product
+// @access   Private
+router.put('/:id/sourcing-agents/:agentId', auth, impersonation, async (req, res) => {
+  try {
+    const product = await Product.findById(req.params.id);
+    if (!product) {
+      return res.status(404).json({ message: 'Product not found' });
+    }
+    if (product.user.toString() !== getEffectiveUserId(req)) {
+      return res.status(401).json({ message: 'User not authorized' });
+    }
+    const agent = product.sourcingAgents.id(req.params.agentId);
+    if (!agent) {
+      return res.status(404).json({ message: 'Sourcing agent not found' });
+    }
+    const { name, baseCost, totalCost, shippingTime, notes } = req.body;
+    if (name !== undefined) agent.name = name;
+    if (baseCost !== undefined) agent.baseCost = baseCost;
+    if (totalCost !== undefined) agent.totalCost = totalCost;
+    if (shippingTime !== undefined) agent.shippingTime = shippingTime;
+    if (notes !== undefined) agent.notes = notes;
+    await product.save();
+    res.json(agent);
+  } catch (err) {
+    console.error(err.message);
+    res.status(500).send('Server Error');
+  }
+});
+
+// @route    DELETE api/products/:id/sourcing-agents/:agentId
+// @desc     Delete a sourcing agent from a product
+// @access   Private
+router.delete('/:id/sourcing-agents/:agentId', auth, impersonation, async (req, res) => {
+  try {
+    const product = await Product.findById(req.params.id);
+    if (!product) {
+      return res.status(404).json({ message: 'Product not found' });
+    }
+    if (product.user.toString() !== getEffectiveUserId(req)) {
+      return res.status(401).json({ message: 'User not authorized' });
+    }
+    const agent = product.sourcingAgents.id(req.params.agentId);
+    if (!agent) {
+      return res.status(404).json({ message: 'Sourcing agent not found' });
+    }
+    agent.remove();
+    await product.save();
+    res.json({ message: 'Sourcing agent removed' });
+  } catch (err) {
+    console.error(err.message);
+    res.status(500).send('Server Error');
+  }
+});
+
 module.exports = router;

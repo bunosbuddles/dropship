@@ -72,6 +72,16 @@ const ProductSchema = new mongoose.Schema({
     enum: ['in progress', 'negotiation', 'complete', 'MOQ required', 'price', 'failed'],
     default: 'in progress'
   },
+  // New field for sourcing agents
+  sourcingAgents: [
+    {
+      name: { type: String, required: true },
+      baseCost: { type: Number, required: true },
+      totalCost: { type: Number, required: true },
+      shippingTime: { type: String },
+      notes: { type: String }
+    }
+  ],
   // New field to store multiple suppliers
   suppliers: [SupplierSchema],
   // Calculated fields

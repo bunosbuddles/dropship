@@ -15,6 +15,7 @@ import ProductManagement from './pages/ProductManagement';
 import GoalsTracking from './pages/GoalsTracking';
 import ProductDetail from './pages/ProductDetail';
 import SuperUserDashboard from './pages/SuperUserDashboard';
+import SourcingTab from './pages/SourcingTab';
 import { Login, Register } from './pages/Auth';
 
 // Protected Route Component
@@ -91,6 +92,13 @@ const App = () => {
             <ProtectedRoute>
               <Layout>
                 <GoalsTracking />
+              </Layout>
+            </ProtectedRoute>
+          } />
+          <Route path="/sourcing" element={
+            <ProtectedRoute>
+              <Layout>
+                <SourcingTab />
               </Layout>
             </ProtectedRoute>
           } />
