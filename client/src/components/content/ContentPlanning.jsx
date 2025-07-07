@@ -485,7 +485,23 @@ const ContentPlanning = () => {
         {!showForm && (
           <button
             className="px-4 py-2 bg-blue-600 text-white rounded-md hover:bg-blue-700 focus:outline-none focus:ring-2 focus:ring-blue-500"
-            onClick={() => setShowForm(true)}
+            onClick={() => {
+              setEditingIdea(null);
+              setFormData({
+                product: selectedProduct,
+                postDateNeeded: '',
+                status: 'Not Started',
+                videoConcept: '',
+                hook: '',
+                script: '',
+                sound: '',
+                props: '',
+                sequence: 1,
+                url: '',
+                finishedURL: ''
+              });
+              setShowForm(true);
+            }}
           >
             Add Content Idea
           </button>
@@ -706,7 +722,23 @@ const ContentPlanning = () => {
           <p className="text-gray-500 mb-4">No content ideas found for this product.</p>
           <button
             className="px-4 py-2 bg-blue-600 text-white rounded-md hover:bg-blue-700 focus:outline-none focus:ring-2 focus:ring-blue-500"
-            onClick={() => setShowForm(true)}
+            onClick={() => {
+              setEditingIdea(null);
+              setFormData({
+                product: selectedProduct,
+                postDateNeeded: '',
+                status: 'Not Started',
+                videoConcept: '',
+                hook: '',
+                script: '',
+                sound: '',
+                props: '',
+                sequence: 1,
+                url: '',
+                finishedURL: ''
+              });
+              setShowForm(true);
+            }}
           >
             Create Your First Content Idea
           </button>
