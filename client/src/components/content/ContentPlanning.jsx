@@ -154,6 +154,7 @@ const ContentPlanning = () => {
     product: selectedProduct,
     filmDate: format(startOfToday(), 'yyyy-MM-dd'),
     postDateNeeded: format(startOfToday(), 'yyyy-MM-dd'),
+    videoConcept: '',
     textHook: '',
     visualHook: '',
     script: '',
@@ -286,12 +287,31 @@ const ContentPlanning = () => {
     e.preventDefault();
     setLoading(true);
     try {
+      // Combine textHook and visualHook for backend 'hook' field
+      let hook = '';
+      if (formData.textHook && formData.visualHook) {
+        hook = `Text: ${formData.textHook} | Visual: ${formData.visualHook}`;
+      } else if (formData.textHook) {
+        hook = formData.textHook;
+      } else if (formData.visualHook) {
+        hook = formData.visualHook;
+      }
+      const payload = {
+        product: formData.product,
+        postDateNeeded: formData.postDateNeeded,
+        videoConcept: formData.videoConcept,
+        hook,
+        script: formData.script,
+        sound: formData.sound,
+        props: formData.props,
+        filmDate: formData.filmDate,
+        refUrl: formData.refUrl,
+        finishedURL: formData.finishedURL
+      };
       if (editingIdea) {
-        // Update existing idea
-        await axiosInstance.put(`${API_BASE_URL}/api/content-ideas/${editingIdea._id}`, formData);
+        await axiosInstance.put(`${API_BASE_URL}/api/content-ideas/${editingIdea._id}`, payload);
       } else {
-        // Create new idea
-        await axiosInstance.post(`${API_BASE_URL}/api/content-ideas`, formData);
+        await axiosInstance.post(`${API_BASE_URL}/api/content-ideas`, payload);
       }
       setShowForm(false);
       setEditingIdea(null);
@@ -312,6 +332,7 @@ const ContentPlanning = () => {
       product: idea.product,
       filmDate: idea.filmDate ? formatDateForInput(idea.filmDate) : format(startOfToday(), 'yyyy-MM-dd'),
       postDateNeeded: idea.postDateNeeded ? formatDateForInput(idea.postDateNeeded) : format(startOfToday(), 'yyyy-MM-dd'),
+      videoConcept: idea.videoConcept || '',
       textHook: idea.textHook || '',
       visualHook: idea.visualHook || '',
       script: idea.script || '',
