@@ -149,19 +149,20 @@ const ContentPlanning = () => {
   const [expandedCards, setExpandedCards] = useState({});
   const [sortBy, setSortBy] = useState('postDateNeeded');
   const [sortOrder, setSortOrder] = useState('asc');
-  const [formData, setFormData] = useState({
-    product: '',
-    postDateNeeded: '',
-    status: 'Not Started',
-    videoConcept: '',
-    hook: '',
+  // Update initial formData
+  const initialFormData = {
+    product: selectedProduct,
+    filmDate: format(startOfToday(), 'yyyy-MM-dd'),
+    postDateNeeded: format(startOfToday(), 'yyyy-MM-dd'),
+    textHook: '',
+    visualHook: '',
     script: '',
     sound: '',
     props: '',
-    sequence: 1,
-    url: '',
+    refUrl: '',
     finishedURL: ''
-  });
+  };
+  const [formData, setFormData] = useState(initialFormData);
   
   // Google Calendar integration
   const [isGoogleConnected, setIsGoogleConnected] = useState(false);
@@ -304,23 +305,22 @@ const ContentPlanning = () => {
     }
   };
 
+  // In handleEdit, set all fields, fallback to blank if missing
   const handleEdit = (idea) => {
     setEditingIdea(idea);
     setFormData({
       product: idea.product,
-      postDateNeeded: formatDateForInput(idea.postDateNeeded),
-      status: idea.status,
-      videoConcept: idea.videoConcept,
-      hook: idea.hook,
+      filmDate: idea.filmDate ? formatDateForInput(idea.filmDate) : format(startOfToday(), 'yyyy-MM-dd'),
+      postDateNeeded: idea.postDateNeeded ? formatDateForInput(idea.postDateNeeded) : format(startOfToday(), 'yyyy-MM-dd'),
+      textHook: idea.textHook || '',
+      visualHook: idea.visualHook || '',
       script: idea.script || '',
       sound: idea.sound || '',
       props: idea.props || '',
-      sequence: idea.sequence || 1,
-      url: idea.url || '',
+      refUrl: idea.refUrl || '',
       finishedURL: idea.finishedURL || ''
     });
     setShowForm(true);
-    // Scroll to form
     window.scrollTo({ top: 0, behavior: 'smooth' });
   };
 
@@ -338,21 +338,10 @@ const ContentPlanning = () => {
     }
   };
 
+  // In handleCancelEdit, reset to initialFormData
   const handleCancelEdit = () => {
     setEditingIdea(null);
-    setFormData({
-      product: selectedProduct,
-      postDateNeeded: '',
-      status: 'Not Started',
-      videoConcept: '',
-      hook: '',
-      script: '',
-      sound: '',
-      props: '',
-      sequence: 1,
-      url: '',
-      finishedURL: ''
-    });
+    setFormData({ ...initialFormData, product: selectedProduct });
     setShowForm(false);
   };
 
@@ -487,19 +476,7 @@ const ContentPlanning = () => {
             className="px-4 py-2 bg-blue-600 text-white rounded-md hover:bg-blue-700 focus:outline-none focus:ring-2 focus:ring-blue-500"
             onClick={() => {
               setEditingIdea(null);
-              setFormData({
-                product: selectedProduct,
-                postDateNeeded: '',
-                status: 'Not Started',
-                videoConcept: '',
-                hook: '',
-                script: '',
-                sound: '',
-                props: '',
-                sequence: 1,
-                url: '',
-                finishedURL: ''
-              });
+              setFormData({ ...initialFormData, product: selectedProduct });
               setShowForm(true);
             }}
           >
@@ -562,6 +539,19 @@ const ContentPlanning = () => {
             <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
               <div>
                 <label className="block text-sm font-medium text-gray-700 mb-1">
+                  Film Date
+                </label>
+                <input
+                  type="date"
+                  name="filmDate"
+                  value={formData.filmDate}
+                  onChange={handleInputChange}
+                  className="w-full rounded-md border-gray-300 shadow-sm focus:border-blue-500 focus:ring-blue-500"
+                />
+              </div>
+              
+              <div>
+                <label className="block text-sm font-medium text-gray-700 mb-1">
                   Post Date Needed
                 </label>
                 <input
@@ -606,15 +596,27 @@ const ContentPlanning = () => {
               
               <div>
                 <label className="block text-sm font-medium text-gray-700 mb-1">
-                  Hook
+                  Text Hook
                 </label>
                 <input
                   type="text"
-                  name="hook"
-                  value={formData.hook}
+                  name="textHook"
+                  value={formData.textHook}
                   onChange={handleInputChange}
                   className="w-full rounded-md border-gray-300 shadow-sm focus:border-blue-500 focus:ring-blue-500"
-                  required
+                />
+              </div>
+              
+              <div>
+                <label className="block text-sm font-medium text-gray-700 mb-1">
+                  Visual Hook
+                </label>
+                <input
+                  type="text"
+                  name="visualHook"
+                  value={formData.visualHook}
+                  onChange={handleInputChange}
+                  className="w-full rounded-md border-gray-300 shadow-sm focus:border-blue-500 focus:ring-blue-500"
                 />
               </div>
               
@@ -658,24 +660,12 @@ const ContentPlanning = () => {
               </div>
               <div>
                 <label className="block text-sm font-medium text-gray-700 mb-1">
-                  Sequence
-                </label>
-                <input
-                  type="text"
-                  name="sequence"
-                  value={formData.sequence}
-                  onChange={handleInputChange}
-                  className="w-full rounded-md border-gray-300 shadow-sm focus:border-blue-500 focus:ring-blue-500"
-                />
-              </div>
-              <div>
-                <label className="block text-sm font-medium text-gray-700 mb-1">
                   URL
                 </label>
                 <input
                   type="url"
-                  name="url"
-                  value={formData.url}
+                  name="refUrl"
+                  value={formData.refUrl}
                   onChange={handleInputChange}
                   className="w-full rounded-md border-gray-300 shadow-sm focus:border-blue-500 focus:ring-blue-500"
                 />
@@ -724,19 +714,7 @@ const ContentPlanning = () => {
             className="px-4 py-2 bg-blue-600 text-white rounded-md hover:bg-blue-700 focus:outline-none focus:ring-2 focus:ring-blue-500"
             onClick={() => {
               setEditingIdea(null);
-              setFormData({
-                product: selectedProduct,
-                postDateNeeded: '',
-                status: 'Not Started',
-                videoConcept: '',
-                hook: '',
-                script: '',
-                sound: '',
-                props: '',
-                sequence: 1,
-                url: '',
-                finishedURL: ''
-              });
+              setFormData({ ...initialFormData, product: selectedProduct });
               setShowForm(true);
             }}
           >

@@ -17,6 +17,17 @@ const ContentIdeaCard = ({ idea, onEdit, onDelete, onToggleSync, expanded, onTog
     }
   };
 
+  const getStatusBgClass = (status) => {
+    switch(status) {
+      case 'Posted':
+        return 'bg-green-100';
+      case 'Edited':
+        return 'bg-yellow-100';
+      default:
+        return 'bg-gray-100';
+    }
+  };
+
   const formatDate = (dateString) => {
     // Parse the date and ensure it's treated as UTC
     const date = new Date(dateString);
@@ -40,7 +51,10 @@ const ContentIdeaCard = ({ idea, onEdit, onDelete, onToggleSync, expanded, onTog
   };
 
   return (
-    <div className="bg-white rounded-lg shadow border border-gray-200 overflow-hidden hover:shadow-md transition-shadow duration-200">
+    <div 
+      id={`content-idea-${idea._id}`}
+      className={`rounded-lg shadow border border-gray-200 overflow-hidden hover:shadow-md transition-shadow duration-200 ${getStatusBgClass(idea.status)}`}
+    >
       <div className="p-4">
         <div className="flex justify-between items-start mb-3">
           <span className={`px-3 py-1 rounded-full text-xs font-semibold ${getStatusBadgeClass(idea.status)}`}>
@@ -50,73 +64,43 @@ const ContentIdeaCard = ({ idea, onEdit, onDelete, onToggleSync, expanded, onTog
             {formatDate(idea.postDateNeeded)}
           </span>
         </div>
-        <div className="flex justify-between items-center mb-2">
-          <span className="text-xs text-gray-700">Sequence: {idea.sequence || 1}</span>
-          {idea.url && (
-            <a href={idea.url} target="_blank" rel="noopener noreferrer" className="text-xs text-blue-600 underline ml-2">
-              Link
-            </a>
-          )}
+        {/* New field order display */}
+        <div className="mb-2">
+          <h4 className="text-sm font-medium text-gray-700 mb-1">Film Date</h4>
+          <p className="text-sm text-gray-600">{idea.filmDate ? formatDate(idea.filmDate) : ''}</p>
         </div>
-        
-        <h3 className="text-lg font-semibold text-gray-800 mb-2 cursor-pointer" onClick={onToggleExpand}>
-          {idea.videoConcept}
-          <span className="ml-1 text-gray-400 text-sm">
-            {expanded ? '▼' : '▶'}
-          </span>
-        </h3>
-        {expanded && (
-          <div className="mb-2">
-            <div className="mb-2">
-              <h4 className="text-sm font-medium text-gray-700 mb-1">Post Date Needed</h4>
-              <p className="text-sm text-gray-600">{formatDate(idea.postDateNeeded)}</p>
-            </div>
-            <div className="mb-2">
-              <h4 className="text-sm font-medium text-gray-700 mb-1">Status</h4>
-              <p className="text-sm text-gray-600">{idea.status || '—'}</p>
-            </div>
-            <div className="mb-2">
-              <h4 className="text-sm font-medium text-gray-700 mb-1">Video Concept</h4>
-              <p className="text-sm text-gray-600">{idea.videoConcept || '—'}</p>
-            </div>
-            <div className="mb-2">
-              <h4 className="text-sm font-medium text-gray-700 mb-1">Hook</h4>
-              <p className="text-sm text-gray-600">{idea.hook || '—'}</p>
-            </div>
-            <div className="mb-2">
-              <h4 className="text-sm font-medium text-gray-700 mb-1">Script</h4>
-              <p className="text-sm text-gray-600">{idea.script || '—'}</p>
-            </div>
-            <div className="mb-2">
-              <h4 className="text-sm font-medium text-gray-700 mb-1">Sound</h4>
-              <p className="text-sm text-gray-600">{idea.sound || '—'}</p>
-            </div>
-            <div className="mb-2">
-              <h4 className="text-sm font-medium text-gray-700 mb-1">Props</h4>
-              <p className="text-sm text-gray-600">{idea.props || '—'}</p>
-            </div>
-            <div className="mb-2">
-              <h4 className="text-sm font-medium text-gray-700 mb-1">Sequence</h4>
-              <p className="text-sm text-gray-600">{idea.sequence || '—'}</p>
-            </div>
-            <div className="mb-2">
-              <h4 className="text-sm font-medium text-gray-700 mb-1">URL</h4>
-              {idea.url ? (
-                <a href={idea.url} target="_blank" rel="noopener noreferrer" className="text-sm text-blue-600 underline">{idea.url}</a>
-              ) : (
-                <span className="text-sm text-gray-600">—</span>
-              )}
-            </div>
-            <div className="mb-2">
-              <h4 className="text-sm font-medium text-gray-700 mb-1">Finished URL</h4>
-              {idea.finishedURL ? (
-                <a href={idea.finishedURL} target="_blank" rel="noopener noreferrer" className="text-sm text-blue-600 underline">{idea.finishedURL}</a>
-              ) : (
-                <span className="text-sm text-gray-600">—</span>
-              )}
-            </div>
-          </div>
-        )}
+        <div className="mb-2">
+          <h4 className="text-sm font-medium text-gray-700 mb-1">Post Date</h4>
+          <p className="text-sm text-gray-600">{idea.postDateNeeded ? formatDate(idea.postDateNeeded) : ''}</p>
+        </div>
+        <div className="mb-2">
+          <h4 className="text-sm font-medium text-gray-700 mb-1">Text Hook</h4>
+          <p className="text-sm text-gray-600">{idea.textHook || ''}</p>
+        </div>
+        <div className="mb-2">
+          <h4 className="text-sm font-medium text-gray-700 mb-1">Visual Hook</h4>
+          <p className="text-sm text-gray-600">{idea.visualHook || ''}</p>
+        </div>
+        <div className="mb-2">
+          <h4 className="text-sm font-medium text-gray-700 mb-1">Script</h4>
+          <p className="text-sm text-gray-600">{idea.script || ''}</p>
+        </div>
+        <div className="mb-2">
+          <h4 className="text-sm font-medium text-gray-700 mb-1">Sound</h4>
+          <p className="text-sm text-gray-600">{idea.sound || ''}</p>
+        </div>
+        <div className="mb-2">
+          <h4 className="text-sm font-medium text-gray-700 mb-1">Props</h4>
+          <p className="text-sm text-gray-600">{idea.props || ''}</p>
+        </div>
+        <div className="mb-2">
+          <h4 className="text-sm font-medium text-gray-700 mb-1">Ref URL</h4>
+          <p className="text-sm text-gray-600">{idea.refUrl || ''}</p>
+        </div>
+        <div className="mb-2">
+          <h4 className="text-sm font-medium text-gray-700 mb-1">Finished URL</h4>
+          <p className="text-sm text-gray-600">{idea.finishedURL || ''}</p>
+        </div>
         <div className="border-t border-gray-100 pt-3 mt-2">
           {/* Google Calendar Toggle */}
           <div className="flex items-center mt-3 pt-2 border-t border-gray-100">

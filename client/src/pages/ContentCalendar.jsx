@@ -23,6 +23,10 @@ const ContentCalendar = () => {
   // Get all days in the month
   const daysInMonth = eachDayOfInterval({ start: monthStart, end: monthEnd });
 
+  // Calculate padding for the first week
+  const firstDayOfWeek = monthStart.getDay(); // 0 (Sun) - 6 (Sat)
+  const paddingDays = Array.from({ length: firstDayOfWeek }, (_, i) => <div key={`pad-${i}`}></div>);
+
   // Load products and content ideas
   useEffect(() => {
     const loadData = async () => {
@@ -45,35 +49,23 @@ const ContentCalendar = () => {
     
     return contentIdeas.filter(idea => {
       try {
-        // Handle date parsing safely - use postDateNeeded field instead of date
-        if (!idea.postDateNeeded) return false;
-        
+        // Use filmDate for calendar mapping
+        if (!idea.filmDate) return false;
         let ideaDate;
-        
-        // Try parsing ISO format first (YYYY-MM-DD)
-        if (typeof idea.postDateNeeded === 'string') {
-          ideaDate = parseISO(idea.postDateNeeded);
+        if (typeof idea.filmDate === 'string') {
+          ideaDate = parseISO(idea.filmDate);
         } else {
-          // If already a Date object
-          ideaDate = new Date(idea.postDateNeeded);
+          ideaDate = new Date(idea.filmDate);
         }
-        
-        // Check if the parsed date is valid
         if (!isValid(ideaDate)) return false;
-        
-        // Normalize the date to avoid timezone issues (get only the date part)
-        // Note: This works because our dates are now stored with noon UTC time
         const year = ideaDate.getUTCFullYear();
         const month = ideaDate.getUTCMonth();
         const dayOfMonth = ideaDate.getUTCDate();
-        
-        // Create a new date using local timezone
         const normalizedIdeaDate = new Date(year, month, dayOfMonth);
         const formattedIdeaDate = format(normalizedIdeaDate, 'yyyy-MM-dd');
-        
         return formattedIdeaDate === formattedDay;
       } catch (error) {
-        console.error('Error processing date for content idea:', idea._id, error);
+        console.error('Error processing filmDate for content idea:', idea._id, error);
         return false;
       }
     });
@@ -137,6 +129,8 @@ const ContentCalendar = () => {
                 ))}
                 
                 {/* Render content idea day cards */}
+                {/* Add padding for the first week */}
+                {paddingDays}
                 {daysInMonth.map((day) => (
                   <ContentIdeasDayCard
                     key={day.toISOString()}
