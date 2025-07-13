@@ -164,6 +164,7 @@ const ContentPlanning = () => {
     finishedURL: ''
   };
   const [formData, setFormData] = useState(initialFormData);
+  const [formError, setFormError] = useState('');
   
   // Google Calendar integration
   const [isGoogleConnected, setIsGoogleConnected] = useState(false);
@@ -285,7 +286,14 @@ const ContentPlanning = () => {
 
   const handleSubmit = async (e) => {
     e.preventDefault();
+    setFormError('');
     setLoading(true);
+    // Validation: videoConcept required, at least one hook required
+    if (!formData.videoConcept || (!formData.textHook && !formData.visualHook)) {
+      setFormError('Please enter a Video Concept and at least one Hook (Text or Visual).');
+      setLoading(false);
+      return;
+    }
     try {
       // Combine textHook and visualHook for backend 'hook' field
       let hook = '';
@@ -319,6 +327,7 @@ const ContentPlanning = () => {
       const res = await axiosInstance.get(`${API_BASE_URL}/api/content-ideas/product/${formData.product}`);
       setContentIdeas(res.data);
     } catch (err) {
+      setFormError('Failed to save content idea. Please check your input.');
       console.error('Failed to save content idea', err);
     } finally {
       setLoading(false);
@@ -557,6 +566,9 @@ const ContentPlanning = () => {
             {editingIdea ? 'Edit Content Idea' : 'New Content Idea'}
           </h3>
           <form onSubmit={handleSubmit}>
+            {formError && (
+              <div className="mb-4 text-red-600 font-medium">{formError}</div>
+            )}
             <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
               <div>
                 <label className="block text-sm font-medium text-gray-700 mb-1">
