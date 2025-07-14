@@ -336,19 +336,33 @@ const ContentPlanning = () => {
 
   // In handleEdit, set all fields, fallback to blank if missing
   const handleEdit = (idea) => {
+    // Parse the hook field from backend into textHook and visualHook
+    let textHook = '';
+    let visualHook = '';
+    if (idea.hook) {
+      // If the hook was saved as "Text: ... | Visual: ..."
+      const textMatch = idea.hook.match(/Text:\s*([^|]*)/);
+      const visualMatch = idea.hook.match(/Visual:\s*(.*)/);
+      if (textMatch) textHook = textMatch[1].trim();
+      if (visualMatch) visualHook = visualMatch[1].trim();
+      // If only one hook, fallback to textHook
+      if (!textMatch && !visualMatch) textHook = idea.hook;
+    }
+    
     setEditingIdea(idea);
     setFormData({
       product: idea.product,
       filmDate: idea.filmDate ? formatDateForInput(idea.filmDate) : format(startOfToday(), 'yyyy-MM-dd'),
       postDateNeeded: idea.postDateNeeded ? formatDateForInput(idea.postDateNeeded) : format(startOfToday(), 'yyyy-MM-dd'),
       videoConcept: idea.videoConcept || '',
-      textHook: idea.textHook || '',
-      visualHook: idea.visualHook || '',
+      textHook,
+      visualHook,
       script: idea.script || '',
       sound: idea.sound || '',
       props: idea.props || '',
-      refUrl: idea.refUrl || '',
-      finishedURL: idea.finishedURL || ''
+      refUrl: idea.url || '',
+      finishedURL: idea.finishedURL || '',
+      status: idea.status || 'Not Started'
     });
     setShowForm(true);
     window.scrollTo({ top: 0, behavior: 'smooth' });
