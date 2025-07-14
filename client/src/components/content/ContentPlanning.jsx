@@ -54,9 +54,16 @@ const ContentIdeaCard = ({ idea, onEdit, onDelete, onToggleSync, expanded, onTog
           <span className={`px-3 py-1 rounded-full text-xs font-semibold ${getStatusBadgeClass(idea.status)}`}>
             {idea.status}
           </span>
-          <span className="text-sm text-gray-500 font-medium">
-            {formatDate(idea.postDateNeeded)}
-          </span>
+          <div className="text-right">
+            <div className="text-sm text-gray-500 font-medium">
+              Post: {formatDate(idea.postDateNeeded)}
+            </div>
+            {idea.filmDate && (
+              <div className="text-xs text-gray-400">
+                Film: {formatDate(idea.filmDate)}
+              </div>
+            )}
+          </div>
         </div>
         
         <h3 className="text-lg font-semibold text-gray-800 mb-2 cursor-pointer" onClick={onToggleExpand}>
@@ -94,6 +101,24 @@ const ContentIdeaCard = ({ idea, onEdit, onDelete, onToggleSync, expanded, onTog
                 <div className="mb-2">
                   <h4 className="text-sm font-medium text-gray-700 mb-1">Props</h4>
                   <p className="text-sm text-gray-600">{idea.props}</p>
+                </div>
+              )}
+              
+              {idea.url && (
+                <div className="mb-2">
+                  <h4 className="text-sm font-medium text-gray-700 mb-1">Ref URL</h4>
+                  <a href={idea.url} target="_blank" rel="noopener noreferrer" className="text-sm text-blue-600 hover:text-blue-800 break-all">
+                    {idea.url}
+                  </a>
+                </div>
+              )}
+              
+              {idea.finishedURL && (
+                <div className="mb-2">
+                  <h4 className="text-sm font-medium text-gray-700 mb-1">Finished URL</h4>
+                  <a href={idea.finishedURL} target="_blank" rel="noopener noreferrer" className="text-sm text-blue-600 hover:text-blue-800 break-all">
+                    {idea.finishedURL}
+                  </a>
                 </div>
               )}
             </>
@@ -154,6 +179,7 @@ const ContentPlanning = () => {
     product: selectedProduct,
     filmDate: format(startOfToday(), 'yyyy-MM-dd'),
     postDateNeeded: format(startOfToday(), 'yyyy-MM-dd'),
+    status: 'Not Started',
     videoConcept: '',
     textHook: '',
     visualHook: '',
@@ -307,6 +333,7 @@ const ContentPlanning = () => {
       const payload = {
         product: formData.product,
         postDateNeeded: formData.postDateNeeded,
+        status: formData.status,
         videoConcept: formData.videoConcept,
         hook,
         script: formData.script,

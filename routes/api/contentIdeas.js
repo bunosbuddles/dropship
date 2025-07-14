@@ -98,12 +98,15 @@ router.post('/', [
     const {
       product,
       postDateNeeded,
+      filmDate,
       status,
       videoConcept,
       hook,
       script,
       sound,
-      props
+      props,
+      refUrl,
+      finishedURL
     } = req.body;
 
     // Check if product exists and belongs to user
@@ -120,12 +123,15 @@ router.post('/', [
       user: getEffectiveUserId(req),
       product,
       postDateNeeded,
+      filmDate: filmDate || null,
       status: status || 'Not Started',
       videoConcept,
       hook,
       script: script || '',
       sound: sound || '',
-      props: props || ''
+      props: props || '',
+      url: refUrl || '',
+      finishedURL: finishedURL || ''
     });
 
     const contentIdea = await newContentIdea.save();
@@ -154,24 +160,30 @@ router.put('/:id', auth, impersonation, async (req, res) => {
 
     const {
       postDateNeeded,
+      filmDate,
       status,
       videoConcept,
       hook,
       script,
       sound,
       props,
+      refUrl,
+      finishedURL,
       syncToGoogle
     } = req.body;
 
     // Build update object
     const contentIdeaFields = {};
     if (postDateNeeded) contentIdeaFields.postDateNeeded = postDateNeeded;
+    if (filmDate !== undefined) contentIdeaFields.filmDate = filmDate;
     if (status) contentIdeaFields.status = status;
     if (videoConcept) contentIdeaFields.videoConcept = videoConcept;
     if (hook) contentIdeaFields.hook = hook;
     if (script !== undefined) contentIdeaFields.script = script;
     if (sound !== undefined) contentIdeaFields.sound = sound;
     if (props !== undefined) contentIdeaFields.props = props;
+    if (refUrl !== undefined) contentIdeaFields.url = refUrl;
+    if (finishedURL !== undefined) contentIdeaFields.finishedURL = finishedURL;
     if (typeof syncToGoogle !== 'undefined') contentIdeaFields.syncToGoogle = syncToGoogle;
 
     contentIdea = await ContentIdea.findByIdAndUpdate(

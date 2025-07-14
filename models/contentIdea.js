@@ -15,6 +15,10 @@ const ContentIdeaSchema = new mongoose.Schema({
     type: Date,
     required: true
   },
+  filmDate: {
+    type: Date,
+    default: null
+  },
   status: {
     type: String,
     enum: ['Not Started', 'Edited', 'Posted'],
